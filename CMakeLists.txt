@@ -83,6 +83,7 @@ else()
   )
 endif()
 
+add_library(System::System ALIAS system)
 set_target_properties(system PROPERTIES EXPORT_NAME System)
 
 ##################
