@@ -21,6 +21,8 @@
 
 #ifdef SYSTEM_OS_WINDOWS
 
+#include <string>
+
 namespace System {
 SYSTEM_HIDE_API(std::string , SYSTEM_CALL_DEFAULT) UTF16ToUTF8(const std::wstring& wstr);
 SYSTEM_HIDE_API(std::wstring, SYSTEM_CALL_DEFAULT) UTF8ToUTF16(const std::string& str);

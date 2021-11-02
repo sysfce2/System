@@ -40,6 +40,7 @@ if(${SYSTEM_CODE} OR ${FILESYSTEM_CODE} OR ${LIBRARY_CODE} OR ${WANT_SYSTEM_SHAR
     $<$<BOOL:${FILESYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp>
     $<$<BOOL:${LIBRARY_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Library.cpp>
     $<$<BOOL:${WANT_SYSTEM_SHARED_LIBRARY_EXPORTS}>:${CMAKE_CURRENT_SOURCE_DIR}/src/SystemExports.cpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/System_internals.cpp
   )
   
   set_property(TARGET system PROPERTY
