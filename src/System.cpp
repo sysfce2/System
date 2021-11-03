@@ -147,13 +147,13 @@ std::string GetModulePath()
     return System::UTF16ToUTF8(wpath);
 }
 
-#elif defined(SYSTEMS_OS_LINUX) || defined(SYSTEM_OS_APPLE)
+#elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
 #ifdef SYSTEM_OS_LINUX
 
 std::chrono::system_clock::time_point GetBootTime()
 {
     static std::chrono::system_clock::time_point boottime(std::chrono::seconds(0));
-    if (boottime.count() == 0)
+    if (boottime == std::chrono::system_clock::time_point{})
     {
         std::ifstream uptime_file("/proc/uptime");
 
@@ -190,8 +190,7 @@ std::string GetExecutablePath()
     {
         exec_path = link;
     }
-
-    SPDLOG_INFO("{}", exec_path);
+	
     return exec_path;
 }
 
@@ -215,8 +214,8 @@ std::vector<std::string> GetProcArgs()
 
 std::chrono::system_clock::time_point GetBootTime()
 {
-    static std::chrono::system_clock::time_point boottime(std::chrono::seconds(0));
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(boottime.time_since_epoch()).count() == 0)
+    static std::chrono::system_clock::time_point boottime{};
+    if (boottime == std::chrono::system_clock::time_point{})
     {
         struct timeval boottime_tv;
         size_t len = sizeof(boottime_tv);
