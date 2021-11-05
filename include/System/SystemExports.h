@@ -76,8 +76,8 @@
     #define SYSTEM_MODE_HIDDEN  __attribute__((visibility("hidden")))
 
     #define SYSTEM_HIDE_CLASS(keyword)                                         SYSTEM_EXTERN_NONE keyword     SYSTEM_MODE_HIDDEN
-    #define SYSTEM_HIDE_API(return_type, call_convention)                      SYSTEM_EXTERN_NONE return_type SYSTEM_MODE_HIDDEN call_convention
-    #define SYSTEM_EXPORT_API(extern_type, return_type, mode, call_convention) extern_type        return_type mode               call_convention
+    #define SYSTEM_HIDE_API(return_type, call_convention)                      SYSTEM_EXTERN_NONE SYSTEM_MODE_HIDDEN return_type call_convention
+    #define SYSTEM_EXPORT_API(extern_type, return_type, mode, call_convention) extern_type        mode               return_type call_convention
 
     //#define LOCAL_API __attribute__((visibility ("internal")))
 #endif
