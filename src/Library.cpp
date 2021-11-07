@@ -115,10 +115,41 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
         if (handle == nullptr)
             return std::string();
 
-        Dl_info infos;
-        dladdr(*(void**)handle, &infos);
+        std::string const self("/proc/self/map_files/");
+        DIR* dir;
+        struct dirent* dir_entry;
+        std::string file_path;
+        std::string res;
 
-        return std::string(infos.dli_fname == nullptr ? "" : infos.dli_fname);
+        dir = opendir(self.c_str());
+        if (dir != nullptr)
+        {
+            while ((dir_entry = readdir(dir)) != nullptr)
+            {
+                file_path = (self + dir_entry->d_name);
+                if (dir_entry->d_type != DT_LNK)
+                {// Not a link
+                    continue;
+                }
+
+                file_path = System::ExpandSymlink(file_path);
+
+                void* lib_handle = dlopen(file_path.c_str(), RTLD_NOW);
+                if (lib_handle != nullptr)
+                {// Don't increment ref_counter.
+                    dlclose(lib_handle);
+                    if (handle == lib_handle)
+                    {
+                        res = std::move(file_path);
+                        break;
+                    }
+                }
+            }
+
+            closedir(dir);
+        }
+
+        return res;
     }
 
     void* Library::GetModuleHandle(std::string const& library_name)
@@ -126,7 +157,6 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
         std::string const self("/proc/self/map_files/");
         DIR* dir;
         struct dirent* dir_entry;
-        std::string link_target;
         void* res = nullptr;
 
         dir = opendir(self.c_str());
@@ -141,22 +171,15 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
                     continue;
                 }
 
-                ssize_t name_len = 128;
-                do
-                {
-                    name_len *= 2;
-                    link_target.resize(name_len);
-                    name_len = readlink(file_path.c_str(), &link_target[0], link_target.length());
-                } while (name_len == link_target.length());
-                link_target.resize(name_len);
+                file_path = System::ExpandSymlink(file_path);
 
-                auto pos = link_target.rfind('/');
+                auto pos = file_path.rfind('/');
                 if (pos != std::string::npos)
                 {
                     ++pos;
-                    if (strncmp(link_target.c_str() + pos, library_name.c_str(), library_name.length()) == 0)
+                    if (strncmp(file_path.c_str() + pos, library_name.c_str(), library_name.length()) == 0)
                     {
-                        res = dlopen(link_target.c_str(), RTLD_NOW);
+                        res = dlopen(file_path.c_str(), RTLD_NOW);
                         if (res != nullptr)
                         {// Like Windows' GetModuleHandle, we don't want to increment the ref counter
                             dlclose(res);

@@ -39,6 +39,4 @@ std::string GetExecutablePath();
 // .dll, .so or .dylib full path
 std::string GetModulePath();
 
-void* GetCurrentModuleHandle();
-
 }

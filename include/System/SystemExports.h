@@ -83,6 +83,6 @@
 #endif
 
 #ifdef WANT_SYSTEM_SHARED_LIBRARY_EXPORTS
-void shared_library_load(void* hmodule);
-void shared_library_unload(void* hmodule);
+void shared_library_load();
+void shared_library_unload();
 #endif

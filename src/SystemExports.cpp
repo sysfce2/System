@@ -31,34 +31,29 @@ BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved )
     switch( fdwReason ) 
     { 
         case DLL_PROCESS_ATTACH:
-            shared_library_load((void*)hinstDLL);
+            shared_library_load();
             break;
         case DLL_THREAD_ATTACH:
             break;
         case DLL_THREAD_DETACH:
             break;
         case DLL_PROCESS_DETACH:
-            shared_library_unload((void*)hinstDLL);
+            shared_library_unload();
             break;
     }
     return TRUE;
 }
 
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
-#include <dlfcn.h>
 
 __attribute__((constructor)) SYSTEM_HIDE_API(void, SYSTEM_CALL_DEFAULT) system_shared_library_constructor()
 {
-    Dl_info infos;
-    dladdr((void*)&system_shared_library_constructor, &infos);
-    shared_library_load(infos.dli_fbase);
+    shared_library_load();
 }
 
 __attribute__((destructor)) SYSTEM_HIDE_API(void, SYSTEM_CALL_DEFAULT) system_shared_library_destructor()
 {
-    Dl_info infos;
-    dladdr((void*)&system_shared_library_constructor, &infos);
-    shared_library_unload(infos.dli_fbase);
+    shared_library_unload();
 }
 
 #endif

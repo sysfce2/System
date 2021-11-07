@@ -32,43 +32,27 @@
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
     #if defined(SYSTEM_OS_LINUX)
         #include <sys/sysinfo.h> // Get uptime (second resolution)
+        #include <dirent.h>
     #else
         #include <sys/sysctl.h>
         #include <mach-o/dyld_images.h>
-
-        #include <memory>
     #endif
 
     #include <sys/types.h>
     #include <pwd.h>
     #include <unistd.h>
+    #include <dlfcn.h>
 
 #else
     #error "unknown arch"
 #endif
 
 namespace System {
-static void* hmodule;
-
-void* GetCurrentModuleHandle()
-{
-    return hmodule;
-}
 
 std::chrono::microseconds GetUpTime()
 {
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - GetBootTime());
 }
-
-}
-
-void shared_library_load(void* hmodule)
-{
-    System::hmodule = hmodule;
-}
-
-void shared_library_unload(void* hmodule)
-{
 
 }
 
@@ -142,8 +126,13 @@ std::string GetModulePath()
 {
     std::string path;
     std::wstring wpath(4096, L'\0');
+    HMODULE hModule;
 
-    DWORD size = GetModuleFileNameW((HINSTANCE)hmodule, &wpath[0], wpath.length());
+    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT | GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)&GetModulePath, &hModule) != FALSE)
+    {
+        DWORD size = GetModuleFileNameW((HINSTANCE)hModule, &wpath[0], wpath.length());
+        wpath.resize(size);
+    }
     return System::UTF16ToUTF8(wpath);
 }
 
@@ -192,6 +181,47 @@ std::string GetExecutablePath()
     }
 	
     return exec_path;
+}
+
+std::string GetModulePath()
+{
+    std::string const self("/proc/self/map_files/");
+    DIR* dir;
+    struct dirent* dir_entry;
+    std::string file_path;
+    std::string res;
+    uint64_t handle = (uint64_t)&GetModulePath;
+    uint64_t low, high;
+    char* tmp;
+
+    dir = opendir(self.c_str());
+    if (dir != nullptr)
+    {
+        while ((dir_entry = readdir(dir)) != nullptr)
+        {
+            file_path = dir_entry->d_name;
+            if (dir_entry->d_type != DT_LNK)
+            {// Not a link
+                continue;
+            }
+
+            tmp = &file_path[0];
+            low = strtoull(tmp, &tmp, 16);
+            if ((tmp - file_path.c_str()) < file_path.length())
+            {
+                high = strtoull(tmp+1, nullptr, 16);
+                if (low != 0 && high > low && low <= handle && handle <= high)
+                {
+                    res = System::ExpandSymlink(self + file_path);
+                    break;
+                }
+            }
+        }
+
+        closedir(dir);
+    }
+
+    return res;
 }
 
 std::vector<std::string> GetProcArgs()
@@ -248,11 +278,54 @@ std::string GetExecutablePath()
         {// For now I don't know how to be sure to get the executable path
          // but looks like the 1st entry is the executable path
             exec_path = dyld_img_infos->infoArray[i].imageFilePath;
+            size_t pos;
+            while((pos = exec_path.find("/./")) != std::string::npos)
+            {
+                exec_path.replace(pos, 3, "/");
+            }
             break;
         }
     }
 
     return exec_path;
+}
+
+// Workaround for MacOS, I don't know how to get module path from address.
+extern "C" void GetModulePathPlaceholder() {}
+
+std::string GetModulePath()
+{
+    task_dyld_info dyld_info;
+    task_t t;
+    pid_t pid = getpid();
+    task_for_pid(mach_task_self(), pid, &t);
+    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+        
+    if (task_info(t, TASK_DYLD_INFO, reinterpret_cast<task_info_t>(&dyld_info), &count) == KERN_SUCCESS)
+    {
+        dyld_all_image_infos* dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
+        for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
+        {
+            void* res = dlopen(dyld_img_infos->infoArray[i].imageFilePath, RTLD_NOW);
+            if (res != nullptr)
+            {
+                void* placeholder = dlsym(res, "GetModulePathPlaceholder");
+                dlclose(res);
+                if(placeholder == (void*)&GetModulePathPlaceholder)
+                {
+                    std::string res(dyld_img_infos->infoArray[i].imageFilePath);
+                    size_t pos;
+                    while((pos = res.find("/./")) != std::string::npos)
+                    {
+                        res.replace(pos, 3, "/");
+                    }
+                    return res;
+                }
+            }
+        }
+    }
+    
+    return std::string();
 }
 
 std::vector<std::string> GetProcArgs()

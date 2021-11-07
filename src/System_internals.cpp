@@ -19,7 +19,7 @@
 
 #include "System_internals.h"
 
-#ifdef SYSTEM_OS_WINDOWS
+#if defined(SYSTEM_OS_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #define NOMINMAX
@@ -47,6 +47,34 @@ SYSTEM_HIDE_API(std::wstring, SYSTEM_CALL_DEFAULT) UTF8ToUTF16(const std::string
     std::wstring wstr(utf16_size, L'\0');
     MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstr[0], utf16_size);
     return wstr;
+}
+
+}
+
+#elif defined(SYSTEM_OS_LINUX)
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+namespace System {
+SYSTEM_HIDE_API(std::string, SYSTEM_CALL_DEFAULT) ExpandSymlink(std::string file_path)
+{
+    struct stat file_stat;
+    std::string link_target;
+    ssize_t name_len = 128;
+    while(lstat(file_path.c_str(), &file_stat) >= 0 && S_ISLNK(file_stat.st_mode) == 1)
+    {
+        do
+        {
+            name_len *= 2;
+            link_target.resize(name_len);
+            name_len = readlink(file_path.c_str(), &link_target[0], link_target.length());
+        } while (name_len == link_target.length());
+        link_target.resize(name_len);
+        file_path = std::move(link_target);
+    }
+
+    return file_path;
 }
 
 }

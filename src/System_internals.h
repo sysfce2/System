@@ -19,13 +19,21 @@
 
 #include <System/SystemExports.h>
 
-#ifdef SYSTEM_OS_WINDOWS
+#if defined(SYSTEM_OS_WINDOWS)
 
 #include <string>
 
 namespace System {
 SYSTEM_HIDE_API(std::string , SYSTEM_CALL_DEFAULT) UTF16ToUTF8(const std::wstring& wstr);
 SYSTEM_HIDE_API(std::wstring, SYSTEM_CALL_DEFAULT) UTF8ToUTF16(const std::string& str);
+}
+
+#elif defined(SYSTEM_OS_LINUX)
+
+#include <string>
+
+namespace System {
+SYSTEM_HIDE_API(std::string , SYSTEM_CALL_DEFAULT) ExpandSymlink(std::string file_path);
 }
 
 #endif
