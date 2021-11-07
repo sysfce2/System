@@ -14,7 +14,6 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(WANT_SYSTEM_SHARED_LIBRARY_EXPORTS "Exports DllMain on Windows, __attribute__ constructor and destructor on Unix, and call the user defined shared_library_load/shared_library_unload" OFF)
 option(SYSTEM_CODE "Add cross-platform usefull functions." ON)
 option(FILESYSTEM_CODE "Add some kind of C++17 filesystem code." ON)
 option(LIBRARY_CODE "Add a Library class to handle modules loding/unloadling/infos." ON)
@@ -33,13 +32,12 @@ set(SYSTEM_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/StringUtils.hpp
 )
 
-if(${SYSTEM_CODE} OR ${FILESYSTEM_CODE} OR ${LIBRARY_CODE} OR ${WANT_SYSTEM_SHARED_LIBRARY_EXPORTS})
+if(${SYSTEM_CODE} OR ${FILESYSTEM_CODE} OR ${LIBRARY_CODE})
   add_library(
     system
     $<$<BOOL:${SYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp>
     $<$<BOOL:${FILESYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp>
     $<$<BOOL:${LIBRARY_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Library.cpp>
-    $<$<BOOL:${WANT_SYSTEM_SHARED_LIBRARY_EXPORTS}>:${CMAKE_CURRENT_SOURCE_DIR}/src/SystemExports.cpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/System_internals.cpp
   )
   
@@ -59,12 +57,6 @@ if(${SYSTEM_CODE} OR ${FILESYSTEM_CODE} OR ${LIBRARY_CODE} OR ${WANT_SYSTEM_SHAR
     system
     PRIVATE
     $<$<BOOL:${MSVC}>:/MP>
-  )
-  
-  target_compile_definitions(
-    system
-    PUBLIC
-    $<$<BOOL:${WANT_SYSTEM_SHARED_LIBRARY_EXPORTS}>:WANT_SYSTEM_SHARED_LIBRARY_EXPORTS>
   )
   
   target_include_directories(
