@@ -1,7 +1,7 @@
 
 cmake_policy(SET CMP0091 NEW)
 project(system)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -33,34 +33,34 @@ set(SYSTEM_HEADERS
 )
 
 if(${SYSTEM_CODE} OR ${FILESYSTEM_CODE} OR ${LIBRARY_CODE})
-  add_library(
-    system
+  add_library(system
     $<$<BOOL:${SYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp>
     $<$<BOOL:${FILESYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp>
     $<$<BOOL:${LIBRARY_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Library.cpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/System_internals.cpp
   )
   
-  set_property(TARGET system PROPERTY
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-  set_property(TARGET system PROPERTY POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(system PROPERTIES
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+    POSITION_INDEPENDENT_CODE ON
+    C_VISIBILITY_PRESET hidden
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+  )
   
-  target_link_libraries(
-    system
+  target_link_libraries(system
     PUBLIC
     $<$<BOOL:${UNIX}>:dl>
     
     $<$<BOOL:${WIN32}>:shell32>
   )
   
-  target_compile_options(
-    system
+  target_compile_options(system
     PRIVATE
     $<$<BOOL:${MSVC}>:/MP>
   )
   
-  target_include_directories(
-    system
+  target_include_directories(system
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -68,8 +68,7 @@ if(${SYSTEM_CODE} OR ${FILESYSTEM_CODE} OR ${LIBRARY_CODE})
 else()
   add_library(system INTERFACE)
 
-  target_include_directories(
-    system
+  target_include_directories(system
     INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>

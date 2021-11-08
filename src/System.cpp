@@ -291,7 +291,7 @@ std::string GetExecutablePath()
 }
 
 // Workaround for MacOS, I don't know how to get module path from address.
-extern "C" void GetModulePathPlaceholder() {}
+SYSTEM_EXPORT_API(SYSTEM_EXTERN_C, void, SYSTEM_MODE_EXPORT, SYSTEM_CALL_DEFAULT) GetModulePathPlaceholder() {}
 
 std::string GetModulePath()
 {
