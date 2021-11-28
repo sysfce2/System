@@ -285,4 +285,9 @@ bool Library::OpenLibrary(std::string const& library_name, bool append_extension
     return true;
 }
 
+std::string Library::GetLibraryExtension()
+{
+    return library_suffix;
+}
+
 }

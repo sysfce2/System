@@ -99,6 +99,8 @@ public:
     static void* GetModuleHandle(std::string const& library_name);
     // Get the library path of a module handle
     static std::string GetModulePath(void* handle);
+    // Get the native extension representing a shared library.
+    static std::string GetLibraryExtension();
 };
 
 }
