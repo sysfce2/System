@@ -26,8 +26,7 @@ namespace System {
 	class Endian
     {
     private:
-        static constexpr uint32_t uint32_ = 0x01020304;
-        static constexpr uint8_t magic_ = (const uint8_t&)uint32_;
+        static constexpr uint32_t endian_magic = 0x01020304;
 
         template<typename T, size_t byte_count>
         struct ByteSwapImpl
@@ -96,15 +95,20 @@ namespace System {
         };
 
     public:
-        static constexpr bool little = magic_ == 0x04;
-        static constexpr bool middle = magic_ == 0x02;
-        static constexpr bool big = magic_ == 0x01;
-        static_assert(little || middle || big, "Cannot determine endianness!");
+		static inline bool little()
+        {
+            return reinterpret_cast<const uint8_t*>(&endian_magic)[0] == 0x04;
+        }
 
+        static inline bool big()
+        {
+            return reinterpret_cast<const uint8_t*>(&endian_magic)[0] == 0x01;
+        }
+	
         template<typename T, size_t Size = sizeof(T)>
         constexpr static inline T net_swap(T v)
         {
-            if(Endian::little)
+            if(Endian::little())
             {
                 return ByteSwapImpl<T, Size>::swap(v);
             }
