@@ -52,7 +52,7 @@ namespace System {
     {
         for (auto& c : str)
         {
-            c = std::tolower(c);
+            c = std::tolower((unsigned char)c);
         }
         return str;
     }
@@ -66,7 +66,7 @@ namespace System {
     {
         for (auto& c : str)
         {
-            c = std::toupper(c);
+            c = std::toupper((unsigned char)c);
         }
         return str;
     }
@@ -96,20 +96,6 @@ namespace System {
     template<typename T>
     inline std::string string_join(T const& container, const std::string &sep)
     {
-        std::string res;
-
-        auto begin = std::begin(container);
-        auto end = std::end(container);
-
-        if (begin != end)
-            res += *begin++;
-
-        while(begin != end)
-        {
-            res += sep;
-            res += *begin++;
-        }
-
-        return res;
+        return string_join(std::begin(container), std::end(container), sep);
     }
 }

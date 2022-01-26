@@ -20,10 +20,6 @@
 #include <System/Filesystem.h>
 #include "System_internals.h"
 
-#include <fstream>
-#include <algorithm>
-#include <ctime>
-
 #if defined(SYSTEM_OS_WINDOWS)
     #define WIN32_LEAN_AND_MEAN
     #define VC_EXTRALEAN
@@ -52,6 +48,12 @@
 #else
     #error "unknown arch"
 #endif
+
+#include <fstream>
+#include <algorithm>
+#include <iterator>
+
+#include <ctime>
 
 namespace System {
 namespace Filesystem {
@@ -481,8 +483,8 @@ std::vector<std::string> ListFiles(std::string const& path, bool files_only, boo
 
     std::string search_path = path;
 
-    if (*path.rbegin() != separator)
-        search_path += separator;
+    if (*path.rbegin() != Separator)
+        search_path += Separator;
 
     DIR* dir = opendir(search_path.c_str());
     struct dirent* entry;
@@ -504,7 +506,7 @@ std::vector<std::string> ListFiles(std::string const& path, bool files_only, boo
                 std::vector<std::string> sub_files = std::move(ListFiles(search_path + dir_name, true));
                 std::transform(sub_files.begin(), sub_files.end(), std::back_inserter(files), [&dir_name](std::string& Filename)
                 {
-                    return dir_name + separator + Filename;
+                    return dir_name + Separator + Filename;
                 });
             }
             if (!files_only)

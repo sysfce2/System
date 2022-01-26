@@ -47,6 +47,8 @@
     #error "unknown arch"
 #endif
 
+#include <fstream>
+
 namespace System {
 
 std::chrono::microseconds GetUpTime()
@@ -422,7 +424,7 @@ std::string GetUserdataPath()
 
     if (!user_appdata_path.empty())
     {
-        user_appdata_path = System::Filesystem::join(user_appdata_path, ".config");
+        user_appdata_path = System::Filesystem::Join(user_appdata_path, ".config");
     }
 
     return user_appdata_path;
