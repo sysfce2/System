@@ -21,70 +21,126 @@
 
 #include <string>
 #include <algorithm>
+#include <string.h>
 
 namespace System {
-    static inline std::string ltrim(std::string str)
+    static inline void LeftTrim(std::string& str)
     {
         str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](const char& c)
         {
             return !std::isspace((unsigned char)c);
         }));
-
-        return str;
     }
 
-    static inline std::string rtrim(std::string str)
+    static inline void RightTrim(std::string& str)
     {
         str.erase(std::find_if(str.rbegin(), str.rend(), [](const char& c)
         {
             return !std::isspace((unsigned char)c);
         }).base(), str.end());
-
-        return str;
     }
 
-    static inline std::string trim(std::string str)
+    static inline void Trim(std::string& str)
     {
-        return rtrim(ltrim(str));
+        LeftTrim(str);
+        RightTrim(str);
     }
 
-    static inline std::string to_lower(std::string str)
+    static inline std::string CopyLeftTrim(std::string const& str)
     {
-        for (auto& c : str)
+        std::string r(str);
+        LeftTrim(r);
+        return r;
+    }
+
+    static inline std::string CopyRightTrim(std::string const& str)
+    {
+        std::string r(str);
+        RightTrim(r);
+        return r;
+    }
+
+    static inline std::string CopyTrim(std::string const& str)
+    {
+        std::string r(str);
+        LeftTrim(r);
+        RightTrim(r);
+        return r;
+    }
+
+    namespace details {
+        template<typename T>
+        static inline void ToLower(T begin, T end)
         {
-            c = std::tolower((unsigned char)c);
+            std::transform(begin, end, begin, [](char c)
+            {
+                return std::tolower((unsigned char)c);
+            });
         }
-        return str;
-    }
 
-    static inline std::string to_lower(const char* str)
-    {
-        return System::to_lower(std::string{ str });
-    }
-
-    static inline std::string to_upper(std::string str)
-    {
-        for (auto& c : str)
+        template<typename T>
+        static inline void ToUpper(T begin, T end)
         {
-            c = std::toupper((unsigned char)c);
+            std::transform(begin, end, begin, [](char c)
+            {
+                return std::toupper((unsigned char)c);
+            });
         }
-        return str;
     }
 
-    static inline std::string to_upper(const char* str)
+    static inline void ToLower(std::string& str)
     {
-        return System::to_upper(std::string{ str });
+        details::ToLower(str.begin(), str.end());
+    }
+
+    static inline void ToLower(char* str)
+    {
+        details::ToLower(str, str + strlen(str));
+    }
+
+    static std::string CopyToLower(std::string const& str)
+    {
+        std::string r(str);
+        details::ToLower(r.begin(), r.end());
+        return r;
+    }
+
+    static std::string CopyToLower(const char* str)
+    {
+        return CopyToLower(std::string{ str });
+    }
+
+    static inline void ToUpper(std::string str)
+    {
+        details::ToUpper(str.begin(), str.end());
+    }
+
+    static inline void ToUpper(char* str)
+    {
+        details::ToUpper(str, str + strlen(str));
+    }
+
+    static std::string CopyUpper(std::string const& str)
+    {
+        std::string r(str);
+        details::ToUpper(r.begin(), r.end());
+        return r;
+    }
+
+    static std::string CopyUpper(const char* str)
+    {
+        return CopyUpper(std::string{ str });
     }
 
     template<typename IteratorType>
-    inline std::string string_join(IteratorType begin, IteratorType end, const std::string &sep)
+    inline std::string StringJoin(IteratorType begin, IteratorType end, const std::string& sep)
     {
         std::string res;
 
         if (begin != end)
             res += *begin++;
 
-        while(begin != end)
+        while (begin != end)
         {
             res += sep;
             res += *begin++;
@@ -94,8 +150,46 @@ namespace System {
     }
 
     template<typename T>
-    inline std::string string_join(T const& container, const std::string &sep)
+    inline std::string StringJoin(T const& container, const std::string& sep)
     {
-        return string_join(std::begin(container), std::end(container), sep);
+        return StringJoin(std::begin(container), std::end(container), sep);
+    }
+
+    // Clone a string allocated with the "new" operator, if str is nullptr, an empty string ("") will be returned, NOT nullptr !
+    inline char* CloneString(const char* str)
+    {
+        if (str == nullptr)
+        {
+            char* res = new char[1];
+            res[0] = '\0';
+            return res;
+        }
+
+        size_t len = strlen(str) + 1;
+        char* res = new char[len];
+        memcpy(res, str, len);
+        return res;
+    }
+
+    inline char* CloneString(std::string const& str)
+    {
+        size_t len = str.length() + 1;
+        char* res = new char[len];
+        memcpy(res, str.c_str(), len);
+        return res;
+    }
+
+    // Will always end the C-String with a null char.
+    inline size_t CopyString(std::string const& src, char* dst, size_t dst_size)
+    {
+        size_t copy_len = src.copy(dst, dst_size - 1);
+        dst[copy_len] = '\0';
+        return copy_len;
+    }
+
+    template<size_t N>
+    inline size_t CopyString(std::string const& src, char(&dst)[N])
+    {
+        return CopyString(src, dst, N);
     }
 }
