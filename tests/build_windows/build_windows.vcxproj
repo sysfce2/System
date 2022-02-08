@@ -163,7 +163,6 @@
     <ClCompile Include="..\..\src\Filesystem.cpp" />
     <ClCompile Include="..\..\src\Library.cpp" />
     <ClCompile Include="..\..\src\System.cpp" />
-    <ClCompile Include="..\..\src\SystemExports.cpp" />
     <ClCompile Include="..\..\src\System_internals.cpp" />
     <ClCompile Include="..\main.cpp" />
   </ItemGroup>

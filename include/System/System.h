@@ -38,5 +38,7 @@ std::string GetUserdataPath();
 std::string GetExecutablePath();
 // .dll, .so or .dylib full path
 std::string GetModulePath();
+// List all loaded modules
+std::vector<std::string> GetModules();
 
 }

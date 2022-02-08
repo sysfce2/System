@@ -26,8 +26,14 @@
     #define VC_EXTRALEAN
     #define NOMINMAX
     #include <Windows.h>
+    #include <TlHelp32.h>
     #include <shellapi.h>
     #include <shlobj.h>   // (shell32.lib) Infos about current user folders
+
+    inline bool handle_is_valid(HANDLE h)
+    {
+        return (h != (HANDLE)0 && h != (HANDLE)-1);
+    }
 
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
     #if defined(SYSTEM_OS_LINUX)
@@ -138,6 +144,38 @@ std::string GetModulePath()
     return System::UTF16ToUTF8(wpath);
 }
 
+std::vector<std::string> GetModules()
+{
+    std::vector<std::string> paths;
+    std::wstring wpath;
+    DWORD size;
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetProcessId(GetCurrentProcess()));
+    if (handle_is_valid(hSnap))
+    {
+        MODULEENTRY32W entry{};
+        entry.dwSize = sizeof(entry);
+        if (Module32FirstW(hSnap, &entry) != FALSE)
+        {
+            wpath.resize(4096);
+            size = GetModuleFileNameW((HINSTANCE)entry.hModule, &wpath[0], wpath.length());
+            wpath.resize(size);
+            paths.emplace_back(System::UTF16ToUTF8(wpath));
+
+            while (Module32NextW(hSnap, &entry) != FALSE)
+            {
+                wpath.resize(4096);
+                size = GetModuleFileNameW((HINSTANCE)entry.hModule, &wpath[0], wpath.length());
+                wpath.resize(size);
+                paths.emplace_back(System::UTF16ToUTF8(wpath));
+            }
+        }
+
+        CloseHandle(hSnap);
+    }
+
+    return paths;
+}
+
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
 #ifdef SYSTEM_OS_LINUX
 
@@ -224,6 +262,47 @@ std::string GetModulePath()
     }
 
     return res;
+}
+
+std::vector<std::string> GetModules()
+{
+    std::string const self("/proc/self/map_files/");
+    std::vector<std::string> paths;
+
+    DIR* dir;
+    struct dirent* dir_entry;
+    std::string path;
+    bool found;
+
+    dir = opendir(self.c_str());
+    if (dir != nullptr)
+    {
+        while ((dir_entry = readdir(dir)) != nullptr)
+        {
+            if (dir_entry->d_type != DT_LNK)
+            {// Not a link
+                continue;
+            }
+
+            found = false;
+            path = System::ExpandSymlink(self + dir_entry->d_name);
+            for (auto const& item : paths)
+            {
+                if (item == path)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                paths.emplace_back(std::move(path));
+        }
+
+        closedir(dir);
+    }
+
+    return paths;
 }
 
 std::vector<std::string> GetProcArgs()
@@ -328,6 +407,34 @@ std::string GetModulePath()
     }
     
     return std::string();
+}
+
+std::vector<std::string> GetModules()
+{
+    std::vector<std::string> paths;
+    std::string path;
+    size_t pos;
+    task_dyld_info dyld_info;
+    task_t t;
+    pid_t pid = getpid();
+    task_for_pid(mach_task_self(), pid, &t);
+    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+
+    if (task_info(t, TASK_DYLD_INFO, reinterpret_cast<task_info_t>(&dyld_info), &count) == KERN_SUCCESS)
+    {
+        dyld_all_image_infos* dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
+        for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
+        {
+            path = dyld_img_infos->infoArray[i].imageFilePath;
+            while ((pos = path.find("/./")) != std::string::npos)
+            {
+                path.replace(pos, 3, "/");
+            }
+            paths.emplace_back(std::move(path));
+        }
+    }
+
+    return paths;
 }
 
 std::vector<std::string> GetProcArgs()
