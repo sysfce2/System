@@ -26,8 +26,6 @@ namespace System {
 	class Endian
     {
     private:
-        static constexpr uint32_t endian_magic = 0x01020304;
-
         template<typename T, size_t byte_count>
         struct ByteSwapImpl
         {
@@ -95,16 +93,18 @@ namespace System {
         };
 
     public:
-		static inline bool little()
+        static inline bool little()
         {
+            const uint32_t endian_magic = 0x01020304;
             return reinterpret_cast<const uint8_t*>(&endian_magic)[0] == 0x04;
         }
 
         static inline bool big()
         {
+            const uint32_t endian_magic = 0x01020304;
             return reinterpret_cast<const uint8_t*>(&endian_magic)[0] == 0x01;
         }
-	
+
         template<typename T, size_t Size = sizeof(T)>
         constexpr static inline T net_swap(T v)
         {
