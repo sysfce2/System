@@ -264,6 +264,47 @@ std::string GetModulePath()
     return res;
 }
 
+std::vector<std::string> GetModules()
+{
+    std::string const self("/proc/self/map_files/");
+    std::vector<std::string> paths;
+
+    DIR* dir;
+    struct dirent* dir_entry;
+    std::string path;
+    bool found;
+
+    dir = opendir(self.c_str());
+    if (dir != nullptr)
+    {
+        while ((dir_entry = readdir(dir)) != nullptr)
+        {
+            if (dir_entry->d_type != DT_LNK)
+            {// Not a link
+                continue;
+            }
+
+            found = false;
+            path = System::ExpandSymlink(self + dir_entry->d_name);
+            for (auto const& item : paths)
+            {
+                if (item == path)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                paths.emplace_back(std::move(path));
+        }
+
+        closedir(dir);
+    }
+
+    return paths;
+}
+
 std::vector<std::string> GetProcArgs()
 {
     std::vector<std::string> res;
