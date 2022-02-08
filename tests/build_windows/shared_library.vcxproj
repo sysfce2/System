@@ -161,7 +161,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\System.cpp" />
-    <ClCompile Include="..\..\src\SystemExports.cpp" />
     <ClCompile Include="..\..\src\System_internals.cpp" />
     <ClCompile Include="..\shared_main.cpp" />
   </ItemGroup>

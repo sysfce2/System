@@ -26,8 +26,14 @@
     #define VC_EXTRALEAN
     #define NOMINMAX
     #include <Windows.h>
+    #include <TlHelp32.h>
     #include <shellapi.h>
     #include <shlobj.h>   // (shell32.lib) Infos about current user folders
+
+    inline bool handle_is_valid(HANDLE h)
+    {
+        return (h != (HANDLE)0 && h != (HANDLE)-1);
+    }
 
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
     #if defined(SYSTEM_OS_LINUX)
@@ -136,6 +142,32 @@ std::string GetModulePath()
         wpath.resize(size);
     }
     return System::UTF16ToUTF8(wpath);
+}
+
+std::vector<std::string> GetModules()
+{
+    std::vector<std::string> paths;
+    std::wstring wpath(4096, L'\0');
+    DWORD size;
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetProcessId(GetCurrentProcess()));
+    if (handle_is_valid(hSnap))
+    {
+        MODULEENTRY32W entry{};
+        entry.dwSize = sizeof(entry);
+        if (Module32FirstW(hSnap, &entry) != FALSE)
+        {
+            while (Module32NextW(hSnap, &entry) != FALSE)
+            {
+                size = GetModuleFileNameW((HINSTANCE)entry.hModule, &wpath[0], wpath.length());
+                wpath.resize(size);
+                paths.emplace_back(System::UTF16ToUTF8(wpath));
+            }
+        }
+
+        CloseHandle(hSnap);
+    }
+
+    return paths;
 }
 
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
