@@ -409,6 +409,34 @@ std::string GetModulePath()
     return std::string();
 }
 
+std::vector<std::string> GetModules()
+{
+    std::vector<std::string> paths;
+    std::string path;
+    size_t pos;
+    task_dyld_info dyld_info;
+    task_t t;
+    pid_t pid = getpid();
+    task_for_pid(mach_task_self(), pid, &t);
+    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+
+    if (task_info(t, TASK_DYLD_INFO, reinterpret_cast<task_info_t>(&dyld_info), &count) == KERN_SUCCESS)
+    {
+        dyld_all_image_infos* dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
+        for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
+        {
+            path = dyld_img_infos->infoArray[i].imageFilePath;
+            while ((pos = path.find("/./")) != std::string::npos)
+            {
+                path.replace(pos, 3, "/");
+            }
+            paths.emplace_back(std::move(path));
+        }
+    }
+
+    return paths;
+}
+
 std::vector<std::string> GetProcArgs()
 {
     std::vector<std::string> res;
