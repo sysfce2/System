@@ -1,13 +1,14 @@
 #include <System/System.h>
 #include <System/SystemDetector.h>
+#include <System/SystemExports.h>
 
 #include <iostream>
 
 void shared_library_load()
 {
     std::cout << "From library: " << std::endl
-        << "  Library executable path: " << System::GetExecutablePath() << std::endl
-        << "  Library module path    : " << System::GetModulePath() << std::endl;
+              << "  Library executable path: " << System::GetExecutablePath() << std::endl
+              << "  Library module path    : " << System::GetModulePath() << std::endl << std::endl;
 }
 
 void shared_library_unload()

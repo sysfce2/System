@@ -147,7 +147,7 @@ std::string GetModulePath()
 std::vector<std::string> GetModules()
 {
     std::vector<std::string> paths;
-    std::wstring wpath(4096, L'\0');
+    std::wstring wpath;
     DWORD size;
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetProcessId(GetCurrentProcess()));
     if (handle_is_valid(hSnap))
@@ -156,8 +156,14 @@ std::vector<std::string> GetModules()
         entry.dwSize = sizeof(entry);
         if (Module32FirstW(hSnap, &entry) != FALSE)
         {
+            wpath.resize(4096);
+            size = GetModuleFileNameW((HINSTANCE)entry.hModule, &wpath[0], wpath.length());
+            wpath.resize(size);
+            paths.emplace_back(System::UTF16ToUTF8(wpath));
+
             while (Module32NextW(hSnap, &entry) != FALSE)
             {
+                wpath.resize(4096);
                 size = GetModuleFileNameW((HINSTANCE)entry.hModule, &wpath[0], wpath.length());
                 wpath.resize(size);
                 paths.emplace_back(System::UTF16ToUTF8(wpath));
