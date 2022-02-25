@@ -14,68 +14,59 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(SYSTEM_CODE "Add cross-platform usefull functions." ON)
-option(FILESYSTEM_CODE "Add some kind of C++17 filesystem code." ON)
-option(LIBRARY_CODE "Add a Library class to handle modules loding/unloadling/infos." ON)
-
 set(SYSTEM_HEADERS
-  $<$<BOOL:${SYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/include/System/System.h>
-  $<$<BOOL:${FILESYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/include/System/Filesystem.h>
-  $<$<BOOL:${LIBRARY_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/include/System/Library.h>
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/System.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/Filesystem.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/Library.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/SystemDetector.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/SystemExports.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/String.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/Encoding.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/ClassEnumUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/ConstExpressions.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/Endianness.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/ScopedLock.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/StringSwitch.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/StringUtils.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/StringView.hpp
 )
 
-if(${SYSTEM_CODE} OR ${FILESYSTEM_CODE} OR ${LIBRARY_CODE})
-  add_library(system
-    $<$<BOOL:${SYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp>
-    $<$<BOOL:${FILESYSTEM_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp>
-    $<$<BOOL:${LIBRARY_CODE}>:${CMAKE_CURRENT_SOURCE_DIR}/src/Library.cpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/System_internals.cpp
-	${SYSTEM_HEADERS}
-  )
-  
-  set_target_properties(system PROPERTIES
-    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-    POSITION_INDEPENDENT_CODE ON
-    C_VISIBILITY_PRESET hidden
-    CXX_VISIBILITY_PRESET hidden
-    VISIBILITY_INLINES_HIDDEN ON
-  )
-  
-  target_link_libraries(system
-    PUBLIC
-    $<$<BOOL:${UNIX}>:dl>
-    
-    $<$<BOOL:${WIN32}>:shell32>
-  )
-  
-  target_compile_options(system
-    PRIVATE
-    $<$<BOOL:${MSVC}>:/MP>
-  )
-  
-  target_include_directories(system
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-  )
-else()
-  add_library(system INTERFACE)
+add_library(system
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Library.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Encoding.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/String.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/System_internals.cpp
+  ${SYSTEM_HEADERS}
+)
 
-  target_include_directories(system
-    INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-  )
-endif()
+set_target_properties(system PROPERTIES
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+  POSITION_INDEPENDENT_CODE ON
+  C_VISIBILITY_PRESET hidden
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN ON
+)
+
+target_link_libraries(system
+  PUBLIC
+  $<$<BOOL:${UNIX}>:dl>
+  
+  $<$<BOOL:${WIN32}>:shell32>
+)
+
+target_compile_options(system
+  PRIVATE
+  $<$<BOOL:${MSVC}>:/MP>
+  $<$<BOOL:${MSVC}>:/Zc:__cplusplus>
+)
+
+target_include_directories(system
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/deps/utfcpp/include>
+  $<INSTALL_INTERFACE:include>
+)
 
 add_library(System::System ALIAS system)
 set_target_properties(system PROPERTIES EXPORT_NAME System)

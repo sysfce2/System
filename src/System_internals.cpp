@@ -27,28 +27,6 @@
 
 namespace System {
 
-SYSTEM_HIDE_API(std::string, SYSTEM_CALL_DEFAULT) UTF16ToUTF8(const std::wstring& wstr)
-{
-    if (wstr.empty())
-        return std::string();
-
-    int utf8_size = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), nullptr, 0, nullptr, nullptr);
-    std::string str(utf8_size, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &str[0], utf8_size, nullptr, nullptr);
-    return str;
-}
-
-SYSTEM_HIDE_API(std::wstring, SYSTEM_CALL_DEFAULT) UTF8ToUTF16(const std::string& str)
-{
-    if (str.empty())
-        return std::wstring();
-
-    int utf16_size = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), nullptr, 0);
-    std::wstring wstr(utf16_size, L'\0');
-    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstr[0], utf16_size);
-    return wstr;
-}
-
 }
 
 #elif defined(SYSTEM_OS_LINUX)

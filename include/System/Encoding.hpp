@@ -13,25 +13,31 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with System; if not, see
+ * License along with the System; if not, see
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <System/SystemExports.h>
-
-#if defined(SYSTEM_OS_WINDOWS)
+#pragma once
 
 #include <string>
 
 namespace System {
+namespace Encoding {
+
+std::wstring Utf8ToWChar(std::string const& str);
+
+std::u16string Utf8ToUtf16(std::string const& str);
+
+std::u32string Utf8ToUtf32(std::string const& str);
+
+std::string WCharToUtf8(std::wstring const& str);
+
+std::string Utf16ToUtf8(std::u16string const& str);
+
+std::string Utf32ToUtf8(std::u32string const& str);
+
+// Size of UTF8 chars (not the size of the byte buffer).
+size_t EncodedLength(std::string const& str);
+
 }
-
-#elif defined(SYSTEM_OS_LINUX)
-
-#include <string>
-
-namespace System {
-SYSTEM_HIDE_API(std::string , SYSTEM_CALL_DEFAULT) ExpandSymlink(std::string file_path);
 }
-
-#endif

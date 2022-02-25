@@ -101,14 +101,12 @@ public:
 
     constexpr size_t length() const { return _length; }
 
-    constexpr char_type operator[](size_t index) { return _string[index]; }
-
     constexpr const char_type& operator[](size_t index) const { return _string[index]; }
 
     constexpr size_t find_first_of(type const& string, const size_t offset = 0) const
     {
-        if (_length < string._length)
-            return std::string::npos;
+        if(_length == 0)
+			return std::string::npos;
 
         for (size_t i = offset; i < _length; ++i)
         {
@@ -124,8 +122,8 @@ public:
 
     constexpr size_t find_first_not_of(type const& string, const size_t offset = 0) const
     {
-        if (_length < string._length)
-            return std::string::npos;
+        if(_length == 0)
+			return std::string::npos;
 
         for (size_t i = offset; i < _length; ++i)
         {

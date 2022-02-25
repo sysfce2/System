@@ -18,6 +18,7 @@
  */
 
 #include <System/Filesystem.h>
+#include <System/Encoding.hpp>
 #include "System_internals.h"
 
 #if defined(SYSTEM_OS_WINDOWS)
@@ -136,7 +137,7 @@ std::string GetCwd()
     wdirectory.resize(GetCurrentDirectoryW(size, &wdirectory[0]));
     wdirectory += L'\\';
 
-    return System::UTF16ToUTF8(wdirectory);
+    return System::Encoding::WCharToUtf8(wdirectory);
 }
 
 bool IsAbsolute(std::string const& path)
@@ -203,7 +204,7 @@ std::string CleanPath(std::string const& path)
 
 bool IsDir(std::string const& path)
 {
-    std::wstring wpath(System::UTF8ToUTF16(path));
+    std::wstring wpath(System::Encoding::Utf8ToWChar(path));
 
     DWORD attrs = GetFileAttributesW(wpath.c_str());
     return attrs != INVALID_FILE_ATTRIBUTES && attrs & FILE_ATTRIBUTE_DIRECTORY;
@@ -211,7 +212,7 @@ bool IsDir(std::string const& path)
 
 bool IsFile(std::string const& path)
 {
-    std::wstring wpath(System::UTF8ToUTF16(path));
+    std::wstring wpath(System::Encoding::Utf8ToWChar(path));
 
     DWORD attrs = GetFileAttributesW(wpath.c_str());
     return attrs != INVALID_FILE_ATTRIBUTES && ((attrs & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY);
@@ -219,7 +220,7 @@ bool IsFile(std::string const& path)
 
 bool Exists(std::string const& path)
 {
-    std::wstring wpath(System::UTF8ToUTF16(path));
+    std::wstring wpath(System::Encoding::Utf8ToWChar(path));
 
     DWORD attrs = GetFileAttributesW(wpath.c_str());
     return attrs != INVALID_FILE_ATTRIBUTES;
@@ -231,7 +232,7 @@ bool CreateDirectory(std::string const& directory, bool recursive)
     struct _stat sb;
 
     std::wstring sub_dir;
-    std::wstring wdirectory(System::UTF8ToUTF16(directory));
+    std::wstring wdirectory(System::Encoding::Utf8ToWChar(directory));
 
     if (wdirectory.empty())
         return false;
@@ -267,7 +268,7 @@ bool CreateDirectory(std::string const& directory, bool recursive)
 
 bool DeleteFile(std::string const& path)
 {
-    std::wstring wpath(System::UTF8ToUTF16(path));
+    std::wstring wpath(System::Encoding::Utf8ToWChar(path));
     return DeleteFileW(wpath.c_str()) == TRUE || GetLastError() == ERROR_FILE_NOT_FOUND;
 }
 
@@ -326,14 +327,14 @@ static std::vector<std::wstring> ListFiles(std::wstring const& path, bool files_
 std::vector<std::string> ListFiles(std::string const& path, bool files_only, bool recursive)
 {
     std::vector<std::string> files;
-    std::wstring wpath(System::UTF8ToUTF16(path));
+    std::wstring wpath(System::Encoding::Utf8ToWChar(path));
 
     std::vector<std::wstring> wfiles(std::move(ListFiles(wpath, files_only, recursive)));
 
     files.reserve(wfiles.size());
     std::transform(wfiles.begin(), wfiles.end(), std::back_inserter(files), [](std::wstring const& wFilename)
     {
-        return System::UTF16ToUTF8(wFilename);
+        return System::Encoding::WCharToUtf8(wFilename);
     });
 
     return files;

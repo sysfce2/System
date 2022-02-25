@@ -19,6 +19,7 @@
 
 #include <System/System.h>
 #include <System/Filesystem.h>
+#include <System/Encoding.hpp>
 #include "System_internals.h"
 
 #if defined(SYSTEM_OS_WINDOWS)
@@ -86,7 +87,7 @@ std::vector<std::string> GetProcArgs()
     res.reserve(nArgs);
     for (int i = 0; i < nArgs; ++i)
     {
-        res.emplace_back(System::UTF16ToUTF8(szArglist[i]));
+        res.emplace_back(System::Encoding::WCharToUtf8(szArglist[i]));
     }
 
     LocalFree(szArglist);
@@ -96,7 +97,7 @@ std::vector<std::string> GetProcArgs()
 
 std::string GetEnvVar(std::string const& var)
 {
-    std::wstring wide(System::UTF8ToUTF16(var));
+    std::wstring wide(System::Encoding::Utf8ToWChar(var));
     std::wstring wVar;
 
     DWORD size = GetEnvironmentVariableW(wide.c_str(), nullptr, 0);
@@ -107,7 +108,7 @@ std::string GetEnvVar(std::string const& var)
     wVar.resize(size - 1);
     GetEnvironmentVariableW(wide.c_str(), &wVar[0], size);
 
-    return System::UTF16ToUTF8(wVar);
+    return System::Encoding::WCharToUtf8(wVar);
 }
 
 std::string GetUserdataPath()
@@ -118,7 +119,7 @@ std::string GetUserdataPath()
     if (FAILED(hr))
         return std::string();
 
-    return System::UTF16ToUTF8(std::wstring(szPath));
+    return System::Encoding::WCharToUtf8(std::wstring(szPath));
 }
 
 std::string GetExecutablePath()
@@ -127,7 +128,7 @@ std::string GetExecutablePath()
     std::wstring wpath(4096, L'\0');
 
     wpath.resize(GetModuleFileNameW(nullptr, &wpath[0], wpath.length()));
-    return System::UTF16ToUTF8(wpath);
+    return System::Encoding::WCharToUtf8(wpath);
 }
 
 std::string GetModulePath()
@@ -141,7 +142,7 @@ std::string GetModulePath()
         DWORD size = GetModuleFileNameW((HINSTANCE)hModule, &wpath[0], wpath.length());
         wpath.resize(size);
     }
-    return System::UTF16ToUTF8(wpath);
+    return System::Encoding::WCharToUtf8(wpath);
 }
 
 std::vector<std::string> GetModules()
@@ -159,14 +160,14 @@ std::vector<std::string> GetModules()
             wpath.resize(4096);
             size = GetModuleFileNameW((HINSTANCE)entry.hModule, &wpath[0], wpath.length());
             wpath.resize(size);
-            paths.emplace_back(System::UTF16ToUTF8(wpath));
+            paths.emplace_back(System::Encoding::WCharToUtf8(wpath));
 
             while (Module32NextW(hSnap, &entry) != FALSE)
             {
                 wpath.resize(4096);
                 size = GetModuleFileNameW((HINSTANCE)entry.hModule, &wpath[0], wpath.length());
                 wpath.resize(size);
-                paths.emplace_back(System::UTF16ToUTF8(wpath));
+                paths.emplace_back(System::Encoding::WCharToUtf8(wpath));
             }
         }
 
@@ -531,7 +532,11 @@ std::string GetUserdataPath()
 
     if (!user_appdata_path.empty())
     {
+#ifdef SYSTEM_OS_LINUX
         user_appdata_path = System::Filesystem::Join(user_appdata_path, ".config");
+#else
+        user_appdata_path = System::Filesystem::Join(user_appdata_path, "Library", "Application Support");
+#endif
     }
 
     return user_appdata_path;

@@ -18,6 +18,7 @@
  */
 
 #include <System/Library.h>
+#include <System/Encoding.hpp>
 #include "System_internals.h"
 
 #if defined(SYSTEM_OS_WINDOWS)
@@ -54,7 +55,7 @@ namespace System {
 
 void* Library::OpenLibrary(std::string const& library_name)
 {
-    std::wstring wide(System::UTF8ToUTF16(library_name));
+    std::wstring wide(System::Encoding::Utf8ToWChar(library_name));
     return LoadLibraryW(wide.c_str());
 }
 
@@ -71,7 +72,7 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
 
 void* Library::GetModuleHandle(std::string const& library_name)
 {
-    std::wstring wide(System::UTF8ToUTF16(library_name));
+    std::wstring wide(System::Encoding::Utf8ToWChar(library_name));
     return GetModuleHandleW(wide.c_str());
 }
 
@@ -88,7 +89,7 @@ std::string Library::GetModulePath(void* handle)
         wpath.resize(wpath.length() * 2);
     }
 
-    return System::UTF16ToUTF8(wpath);
+    return System::Encoding::WCharToUtf8(wpath);
 }
 
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
