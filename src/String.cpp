@@ -161,9 +161,13 @@ char* CloneString(std::string const& str)
 
 size_t CopyString(std::string const& src, char* dst, size_t dst_size)
 {
-    size_t copy_len = src.copy(dst, dst_size - 1);
-    dst[copy_len] = '\0';
-    return copy_len;
+    size_t written = 0;
+    if (dst != nullptr && dst_size > 0)
+    {
+        written = src.copy(dst, dst_size - 1);
+        dst[written] = '\0';
+    }
+    return written;
 }
 
 }// namespace String

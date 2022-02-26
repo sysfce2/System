@@ -82,14 +82,14 @@ char* CloneString(const char* str);
 
 char* CloneString(std::string const& str);
 
+// Will always end the C-String with a null char.
+size_t CopyString(std::string const& src, char* dst, size_t dst_size);
+
 template<size_t N>
 inline size_t CopyString(std::string const& src, char(&dst)[N])
 {
     return CopyString(src, dst, N);
 }
-
-// Will always end the C-String with a null char.
-size_t CopyString(std::string const& src, char* dst, size_t dst_size);
 
 }
 }
