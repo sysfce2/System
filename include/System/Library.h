@@ -23,84 +23,58 @@
 
 namespace System {
 
+namespace Library {
+
 class Library
 {
-    void* _Handle;
+    class LibraryImpl* _Impl;
 
 public:
-    inline Library():
-        _Handle(nullptr)
-    {}
+    Library();
 
-    inline Library(Library const& other)
-    {
-        _Handle = other._Handle;
-    }
+    Library(Library const& other);
 
-    inline Library(Library&& other) noexcept
-    {
-        _Handle = other._Handle;
-        other._Handle = nullptr;
-    }
+    Library(Library&& other) noexcept;
 
-    inline Library& operator=(Library const& other)
-    {
-        _Handle = other._Handle;
-        return *this;
-    }
+    Library& operator=(Library const& other);
 
-    inline Library& operator=(Library&& other) noexcept
-    {
-        void* tmp = other._Handle;
-        other._Handle = _Handle;
-        _Handle = tmp;
+    Library& operator=(Library&& other) noexcept;
 
-        return *this;
-    }
-
-    inline ~Library()
-    {
-        CloseLibrary(_Handle);
-        _Handle = nullptr;
-    }
+    ~Library();
 
     bool OpenLibrary(std::string const& library_name, bool append_extension);
 
-    inline void CloseLibrary()
+    void CloseLibrary();
+
+    void* GetVSymbol(std::string const& symbol_name) const;
+
+    template<typename T>
+    inline T* GetSymbol(std::string const& symbol_name) const
     {
-        CloseLibrary(_Handle);
-        _Handle = nullptr;
+        return reinterpret_cast<T*>(GetVSymbol(symbol_name));
     }
 
-	template<typename T>
-    inline T* GetSymbol(std::string const& symbol_name)
-    {
-        return reinterpret_cast<T*>(GetSymbol(_Handle, symbol_name));
-    }
+    std::string GetLibraryPath() const;
 
-    inline std::string GetModulePath()
-    {
-        return GetModulePath(_Handle);
-    }
+    void* GetLibraryNativeHandle() const;
 
-    inline bool IsLoaded() const
-    {
-        return _Handle != nullptr;
-    }
-
-    // Triies to load the library, I suggest that you use a Library instance instead
-    static void* OpenLibrary(std::string const& library_name);
-    // Will decrease the OS' ref counter on the library, use it to close a handle opened by open_library.
-    // A Library instance will automatically call this in the destructor
-    static void  CloseLibrary(void* handle);
-    // Will try to retrieve a symbol address from the library handle
-    static void* GetSymbol(void* handle, std::string const& symbol_name);
-    // Get a pointer to the library, if it is not loaded, will return nullptr. This doesn't increment the OS' internal ref counter
-    static void* GetModuleHandle(std::string const& library_name);
-    // Get the library path of a module handle
-    static std::string GetModulePath(void* handle);
-    // Get the native extension representing a shared library.
-    static std::string GetLibraryExtension();
+    bool IsLoaded() const;
 };
+
+// Triies to load the library, I suggest that you use a Library instance instead
+void* OpenLibrary(const char* library_name);
+// Will decrease the OS' ref counter on the library, use it to close a handle opened by open_library.
+// A Library instance will automatically call this in the destructor
+void  CloseLibrary(void* handle);
+// Will try to retrieve a symbol address from the library handle
+void* GetSymbol(void* handle, const char* symbol_name);
+// Get a pointer to the library, if it is not loaded, will return nullptr. This doesn't increment the OS' internal ref counter
+void* GetLibraryHandle(const char* library_name);
+// Get the library path of a module handle
+std::string GetLibraryPath(void* handle);
+// Get the native extension representing a shared library.
+std::string GetLibraryExtension();
+
+}
 
 }

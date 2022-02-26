@@ -20,16 +20,13 @@
 #include <System/Library.h>
 #include <System/Encoding.hpp>
 #include "System_internals.h"
+#include <memory>
 
 #if defined(SYSTEM_OS_WINDOWS)
     #define WIN32_LEAN_AND_MEAN
     #define VC_EXTRALEAN
     #define NOMINMAX
     #include <Windows.h>
-
-    #ifdef GetModuleHandle
-    #undef GetModuleHandle
-    #endif
 
     constexpr char library_suffix[] = ".dll";
 
@@ -51,32 +48,43 @@
 
 namespace System {
 
+namespace Library {
+
 #if defined(SYSTEM_OS_WINDOWS)
 
-void* Library::OpenLibrary(std::string const& library_name)
+void* OpenLibrary(const char* library_name)
 {
+    if (library_name == nullptr)
+        return nullptr;
+
     std::wstring wide(System::Encoding::Utf8ToWChar(library_name));
     return LoadLibraryW(wide.c_str());
 }
 
-void Library::CloseLibrary(void* handle)
+void CloseLibrary(void* handle)
 {
     if(handle != nullptr)
         FreeLibrary((HMODULE)handle);
 }
 
-void* Library::GetSymbol(void* handle, std::string const& symbol_name)
+void* GetSymbol(void* handle, const char* symbol_name)
 {
-    return handle == nullptr ? nullptr : GetProcAddress((HMODULE)handle, symbol_name.c_str());
+    if (symbol_name == nullptr)
+        return nullptr;
+
+    return GetProcAddress((HMODULE)handle, symbol_name);
 }
 
-void* Library::GetModuleHandle(std::string const& library_name)
+void* GetLibraryHandle(const char* library_name)
 {
+    if (library_name == nullptr)
+        return nullptr;
+
     std::wstring wide(System::Encoding::Utf8ToWChar(library_name));
     return GetModuleHandleW(wide.c_str());
 }
 
-std::string Library::GetModulePath(void* handle)
+std::string GetLibraryPath(void* handle)
 {
     if (handle == nullptr)
         return std::string();
@@ -94,24 +102,30 @@ std::string Library::GetModulePath(void* handle)
 
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
 
-void* Library::OpenLibrary(std::string const& library_name)
+void* OpenLibrary(const char* library_name)
 {
-    return dlopen(library_name.c_str(), RTLD_NOW);
+    if (library_name == nullptr)
+        return nullptr;
+
+    return dlopen(library_name, RTLD_NOW);
 }
 
-void Library::CloseLibrary(void* handle)
+void CloseLibrary(void* handle)
 {
     if(handle != nullptr)
         dlclose(handle);
 }
 
-void* Library::GetSymbol(void* handle, std::string const& symbol_name)
+void* GetSymbol(void* handle, const char* symbol_name)
 {
-    return handle == nullptr ? nullptr : dlsym(handle, symbol_name.c_str());
+    if (handle == nullptr)
+        return nullptr;
+
+    return dlsym(handle, symbol_name);
 }
 
 #if defined(SYSTEM_OS_LINUX)
-    std::string Library::GetModulePath(void* handle)
+    std::string GetLibraryPath(void* handle)
     {
         if (handle == nullptr)
             return std::string();
@@ -153,12 +167,16 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
         return res;
     }
 
-    void* Library::GetModuleHandle(std::string const& library_name)
+    void* GetLibraryHandle(const char* library_name)
     {
+        if (library_name == nullptr)
+            return nullptr;
+
         std::string const self("/proc/self/map_files/");
         DIR* dir;
         struct dirent* dir_entry;
         void* res = nullptr;
+        size_t library_name_len = strlen(library_name);
 
         dir = opendir(self.c_str());
         if (dir != nullptr)
@@ -178,7 +196,7 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
                 if (pos != std::string::npos)
                 {
                     ++pos;
-                    if (strncmp(file_path.c_str() + pos, library_name.c_str(), library_name.length()) == 0)
+                    if (strncmp(file_path.c_str() + pos, library_name, library_name_len) == 0)
                     {
                         res = dlopen(file_path.c_str(), RTLD_NOW);
                         if (res != nullptr)
@@ -197,7 +215,7 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
     }
 #else
 
-    std::string Library::GetModulePath(void* handle)
+    std::string GetLibraryPath(void* handle)
     {
         if (handle == nullptr)
             return std::string();
@@ -226,9 +244,14 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
         return std::string();
     }
 
-    void* Library::GetModuleHandle(std::string const& library_name)
+    void* GetLibraryHandle(const char* library_name)
     {
+        if (library_name == nullptr)
+            return nullptr;
+
         void* res = nullptr;
+
+        size_t library_name_len = strlen(library_name);
 
         task_dyld_info dyld_info;
         task_t t;
@@ -246,7 +269,7 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
                 if (pos != nullptr)
                 {
                     ++pos;
-                    if (strncmp(pos, library_name.c_str(), library_name.length()) == 0)
+                    if (strncmp(pos, library_name, library_name_len) == 0)
                     {
                         res = dlopen(dyld_img_infos->infoArray[i].imageFilePath, RTLD_NOW);
                         if (res != nullptr)
@@ -265,30 +288,130 @@ void* Library::GetSymbol(void* handle, std::string const& symbol_name)
 
 #endif
 
-bool Library::OpenLibrary(std::string const& library_name, bool append_extension)
+std::string GetLibraryExtension()
 {
-    std::string lib_name = (append_extension ? library_name + library_suffix : library_name);
-
-    void* lib = OpenLibrary(lib_name.c_str());
-
-    if (lib == nullptr)
-    {
-        lib_name = "lib" + lib_name;
-        lib = OpenLibrary(lib_name.c_str());
-        if (lib == nullptr)
-        {
-            return false;
-        }
-    }
-
-    CloseLibrary();
-    _Handle = lib;
-    return true;
+    return std::string{ library_suffix };
 }
 
-std::string Library::GetLibraryExtension()
+class LibraryImpl
 {
-    return library_suffix;
+    std::shared_ptr<void> _Handle;
+
+    struct LibraryHandleDestructor
+    {
+        void operator()(void* h)
+        {
+            System::Library::CloseLibrary(h);
+        }
+    };
+
+public:
+    inline bool OpenLibrary(std::string const& library_name, bool append_extension)
+    {
+        std::string lib_name = (append_extension ? library_name + library_suffix : library_name);
+
+        void* lib = System::Library::OpenLibrary(lib_name.c_str());
+
+        if (lib == nullptr)
+        {
+            lib_name = "lib" + lib_name;
+            lib = System::Library::OpenLibrary(lib_name.c_str());
+
+            if (lib == nullptr)
+                return false;
+        }
+
+        _Handle = std::shared_ptr<void>(lib, LibraryHandleDestructor());
+        return true;
+    }
+
+    inline void CloseLibrary()
+    {
+        _Handle.reset();
+    }
+
+    inline void* GetVSymbol(std::string const& symbol_name) const
+    {
+        return System::Library::GetSymbol(_Handle.get(), symbol_name.c_str());
+    }
+
+    inline std::string GetLibraryPath() const
+    {
+        return System::Library::GetLibraryPath(_Handle.get());
+    }
+
+    inline void* GetLibraryNativeHandle() const
+    {
+        return _Handle.get();
+    }
+
+    inline bool IsLoaded() const
+    {
+        return _Handle != nullptr;
+    }
+};
+
+Library::Library():
+    _Impl(new LibraryImpl)
+{}
+
+Library::Library(Library const& other):
+    _Impl(new LibraryImpl(*other._Impl))
+{}
+
+Library::Library(Library&& other) noexcept:
+    _Impl(other._Impl)
+{
+    other._Impl = nullptr;
+}
+
+Library& Library::operator=(Library const& other)
+{
+    *_Impl = *other._Impl;
+    return *this;
+}
+
+Library& Library::operator=(Library&& other) noexcept
+{
+    std::swap(_Impl, other._Impl);
+    return *this;
+}
+
+Library::~Library()
+{
+    delete _Impl; _Impl = nullptr;
+}
+
+bool Library::OpenLibrary(std::string const& library_name, bool append_extension)
+{
+    return _Impl->OpenLibrary(library_name, append_extension);
+}
+
+void Library::CloseLibrary()
+{
+    _Impl->CloseLibrary();
+}
+
+void* Library::GetVSymbol(std::string const& symbol_name) const
+{
+    return _Impl->GetVSymbol(symbol_name);
+}
+
+std::string Library::GetLibraryPath() const
+{
+    return _Impl->GetLibraryPath();
+}
+
+void* Library::GetLibraryNativeHandle() const
+{
+    return _Impl->GetLibraryNativeHandle();
+}
+
+bool Library::IsLoaded() const
+{
+    return _Impl->IsLoaded();
+}
+
 }
 
 }
