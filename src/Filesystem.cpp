@@ -70,6 +70,21 @@ std::string Filename(std::string const& path)
     return path;
 }
 
+std::string Dirname(std::string const& path)
+{
+    std::string r(path);
+    _CleanSlashes(r);
+    size_t pos = r.find_last_of("/\\");
+
+    if (pos == std::string::npos || pos == 0 && r.length() == 1)
+        return std::string();
+
+    if (pos == 0)
+        ++pos;
+
+    return r.substr(0, pos);
+}
+
 std::string Join(StringView r, StringView l)
 {
     std::string result(r.to_string());
@@ -149,24 +164,6 @@ static void _CleanSlashes(std::string& str)
             ++pos;
         }
     }
-}
-
-std::string Dirname(std::string const& path)
-{
-    std::string r;
-    size_t pos = path.find_last_of(":/\\");
-
-    if (pos == std::string::npos)
-        return r;
-
-    while (pos != 0 && path[pos] != ':' && (path[pos] == '/' || path[pos] == '\\'))
-    {
-        --pos;
-    }
-
-    r = std::string(path.begin(), path.begin() + pos + 1);
-    _CleanSlashes(r);
-    return r;
 }
 
 std::string GetCwd()
@@ -390,24 +387,6 @@ static void _CleanSlashes(std::string& str)
             ++pos;
         }
     }
-}
-
-std::string Dirname(std::string const& path)
-{
-    std::string r;
-    size_t pos = path.find_last_of("/\\");
-
-    if (pos == std::string::npos)
-        return r;
-
-    while (pos != 0 && (path[pos] == '/' || path[pos] == '\\'))
-    {
-        --pos;
-    }
-
-    r = std::string(path.begin(), path.begin() + pos + 1);
-    _CleanSlashes(r);
-    return r;
 }
 
 std::string GetCwd()

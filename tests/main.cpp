@@ -41,7 +41,7 @@ TEST_CASE("Dirname", "[dirname]")
     CHECK(System::Filesystem::Dirname("D:\\test1\\test2/test3") == "D:\\test1\\test2");
     CHECK(System::Filesystem::Dirname("D:\\test1\\test2") == "D:\\test1");
     CHECK(System::Filesystem::Dirname("D:\\test1") == "D:");
-    CHECK(System::Filesystem::Dirname("D:") == "D:");
+    CHECK(System::Filesystem::Dirname("D:") == "");
 
     CHECK(System::Filesystem::Dirname("test1/test2") == "test1");
     CHECK(System::Filesystem::Dirname("test1\\test2") == "test1");
@@ -53,7 +53,7 @@ TEST_CASE("Dirname", "[dirname]")
     CHECK(System::Filesystem::Dirname("/test1/test2\\test3") == "/test1/test2");
     CHECK(System::Filesystem::Dirname("/test1/test2") == "/test1");
     CHECK(System::Filesystem::Dirname("/test1") == "/");
-    CHECK(System::Filesystem::Dirname("/") == "/");
+    CHECK(System::Filesystem::Dirname("/") == "");
 
     CHECK(System::Filesystem::Dirname("test1/test2") == "test1");
     CHECK(System::Filesystem::Dirname("test1\\test2") == "test1");
