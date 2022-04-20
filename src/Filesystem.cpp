@@ -76,7 +76,7 @@ std::string Dirname(std::string const& path)
     _CleanSlashes(r);
     size_t pos = r.find_last_of("/\\");
 
-    if (pos == std::string::npos || pos == 0 && r.length() == 1)
+    if (pos == std::string::npos || (pos == 0 && r.length() == 1))
         return std::string();
 
     if (pos == 0)
