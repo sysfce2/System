@@ -23,6 +23,58 @@ TEST_CASE("Load library", "[loadlibrary]")
               << "  Executable path       : " << System::GetExecutablePath() << std::endl
               << "  Executable module path: " << System::GetModulePath() << std::endl
               << "  Library module path   : " << shared.GetLibraryPath() << std::endl << std::endl;
+
+#if defined(SYSTEM_OS_WINDOWS)
+    {
+        auto tmp = System::Filesystem::Filename(System::GetExecutablePath());
+        CHECK(tmp == "test_app.exe");
+    }
+    {
+        auto tmp = System::Filesystem::Filename(System::GetModulePath());
+        CHECK(tmp == "test_app.exe");
+    }
+    {
+        auto tmp = System::Filesystem::Filename(shared.GetLibraryPath());
+        CHECK(tmp == "shared.dll");
+    }
+    CHECK(System::Library::GetLibraryExtension() == ".dll");
+#elif defined(SYSTEM_OS_LINUX)
+    {
+        auto tmp = System::Filesystem::Filename(System::GetExecutablePath());
+        CHECK(tmp == "test_app");
+    }
+    {
+        auto tmp = System::Filesystem::Filename(System::GetModulePath());
+        CHECK(tmp == "test_app");
+    }
+    {
+        auto tmp = System::Filesystem::Filename(shared.GetLibraryPath());
+        CHECK(tmp == "shared.so");
+    }
+    CHECK(System::Library::GetLibraryExtension() == ".so");
+#elif defined(SYSTEM_OS_MACOS)
+    {
+        auto tmp = System::Filesystem::Filename(System::GetExecutablePath());
+        CHECK(tmp == "test_app");
+    }
+    {
+        auto tmp = System::Filesystem::Filename(System::GetModulePath());
+        CHECK(tmp == "test_app");
+    }
+    {
+        auto tmp = System::Filesystem::Filename(shared.GetLibraryPath());
+        CHECK(tmp == "shared.dylib");
+    }
+    CHECK(System::Library::GetLibraryExtension() == ".dylib");
+#endif
+
+    {
+        auto tmp = System::Filesystem::Filename(shared.GetLibraryPath());
+        CHECK(System::Library::GetLibraryHandle(tmp.c_str()) == shared.GetLibraryNativeHandle());
+    }
+    {
+        CHECK(shared.GetLibraryPath() == System::Library::GetLibraryPath(shared.GetLibraryNativeHandle()));
+    }
 }
 
 TEST_CASE("Show modules", "[showmodules]")

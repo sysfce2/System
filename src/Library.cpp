@@ -96,7 +96,8 @@ std::string GetLibraryPath(void* handle)
     {
         wpath.resize(wpath.length() * 2);
     }
-
+    
+    wpath.resize(size);
     return System::Encoding::WCharToUtf8(wpath);
 }
 
