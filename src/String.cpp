@@ -136,39 +136,30 @@ std::string CopyUpper(const char* str)
 }
 
 // Clone a string allocated with the "new" operator, if str is nullptr, an empty string ("") will be returned, NOT nullptr !
-char* CloneString(const char* str)
+namespace details
 {
-    if (str == nullptr)
-    {
-        char* res = new char[1];
-        res[0] = '\0';
-        return res;
-    }
 
-    size_t len = strlen(str) + 1;
+char* CloneString(System::StringView src)
+{
+    size_t len = src.length() + 1;
     char* res = new char[len];
-    memcpy(res, str, len);
+    memcpy(res, src.data(), len);
     return res;
 }
 
-char* CloneString(std::string const& str)
-{
-    size_t len = str.length() + 1;
-    char* res = new char[len];
-    memcpy(res, str.c_str(), len);
-    return res;
-}
-
-size_t CopyString(std::string const& src, char* dst, size_t dst_size)
+size_t CopyString(System::StringView src, char* dst, size_t dst_size)
 {
     size_t written = 0;
     if (dst != nullptr && dst_size > 0)
     {
-        written = src.copy(dst, dst_size - 1);
+        written = src.length() > dst_size ? dst_size - 1 : src.length();
+        memcpy(dst, src.data(), written);
         dst[written] = '\0';
     }
     return written;
 }
+
+}// namespace details
 
 }// namespace String
 }// namespace System

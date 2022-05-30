@@ -28,7 +28,7 @@ namespace System {
 
 template<typename char_type>
 class BasicStringView {
-    const char* _string;
+    const char_type* _string;
     size_t _length;
 
     using type = BasicStringView<char_type>;
@@ -212,6 +212,23 @@ public:
     std::string to_string() const
     {
         return std::string(_string, _string + _length);
+    }
+
+    size_t copy(char_type* p, size_t p_size) const
+    {
+        size_t written = 0;
+        if (p != nullptr)
+        {
+            size_t to_write = (_length > p_size ? p_size : _length);
+            char_type* b = _string;
+            while (to_write--)
+            {
+                *p++ = *b++;
+                ++written;
+            }
+        }
+
+        return written;
     }
 };
 

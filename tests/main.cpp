@@ -2,6 +2,7 @@
 #include <System/Library.h>
 #include <System/Filesystem.h>
 #include <System/SystemDetector.h>
+#include <System/String.hpp>
 
 #include <iostream>
 
@@ -78,20 +79,131 @@ TEST_CASE("Filename", "[filename]")
 TEST_CASE("Join", "[join]")
 {
 #if defined(SYSTEM_OS_WINDOWS)
-    CHECK(System::Filesystem::Join("a", "b") == "a\\b");
-    CHECK(System::Filesystem::Join("a\\", "b") == "a\\b");
-    CHECK(System::Filesystem::Join("a", "\\b") == "a\\b");
-    CHECK(System::Filesystem::Join("a/", "b") == "a\\b");
-    CHECK(System::Filesystem::Join("a", "/b") == "a\\b");
-    CHECK(System::Filesystem::Join("a") == "a");
-    CHECK(System::Filesystem::Join("a", "b", "c") == "a\\b\\c");
+    #define TSEP "\\"
 #else
-    CHECK(System::Filesystem::Join("a", "b") == "a/b");
-    CHECK(System::Filesystem::Join("a\\", "b") == "a/b");
-    CHECK(System::Filesystem::Join("a", "\\b") == "a/b");
-    CHECK(System::Filesystem::Join("a/", "b") == "a/b");
-    CHECK(System::Filesystem::Join("a", "/b") == "a/b");
-    CHECK(System::Filesystem::Join("a") == "a");
-    CHECK(System::Filesystem::Join("a", "b", "c") == "a/b/c");
+    #define TSEP "/"
 #endif
+    CHECK(System::Filesystem::Join("a", "b") == "a" TSEP "b");
+    CHECK(System::Filesystem::Join("a\\", "b") == "a" TSEP "b");
+    CHECK(System::Filesystem::Join("a", "\\b") == "a" TSEP "b");
+    CHECK(System::Filesystem::Join("a/", "b") == "a" TSEP "b");
+    CHECK(System::Filesystem::Join("a", "/b") == "a" TSEP "b");
+    CHECK(System::Filesystem::Join("a") == "a");
+    CHECK(System::Filesystem::Join("a", "b", "c") == "a" TSEP "b" TSEP "c");
+
+#undef TSEP
+}
+
+TEST_CASE("CloneString", "[clone_string]")
+{
+    char* result = nullptr;
+
+    // const char* (nullptr)
+    {
+        result = System::String::CloneString(nullptr);
+        CHECK((result != nullptr && strcmp(result, "") == 0));
+        delete[] result; result = nullptr;
+    }
+    // const char*
+    {
+        const char* tmp = "Clone test";
+        result = System::String::CloneString(tmp);
+        CHECK((result != nullptr && strcmp(result, "Clone test") == 0));
+        delete[] result; result = nullptr;
+    }
+    // std::string const&
+    {
+        result = System::String::CloneString(std::string("Clone test"));
+        CHECK((result != nullptr && strcmp(result, "Clone test") == 0));
+        delete[] result; result = nullptr;
+    }
+    // System::StringView
+    {
+        result = System::String::CloneString(System::StringView("Clone test"));
+        CHECK((result != nullptr && strcmp(result, "Clone test") == 0));
+        delete[] result; result = nullptr;
+    }
+}
+
+TEST_CASE("CopyString", "[copy_string]")
+{
+    size_t result;
+    {
+        char buffer[200];
+        // const char* (nullptr)
+        result = System::String::CopyString(nullptr, buffer, 200);
+        CHECK((result == 0 && strcmp(buffer, "") == 0));
+        memset(buffer, 0, 200);
+        // const char*
+        result = System::String::CopyString("Copy test", buffer, 200);
+        CHECK((result == 9 && strcmp(buffer, "Copy test") == 0));
+        memset(buffer, 0, 200);
+        // System::StringView
+        result = System::String::CopyString(System::StringView("Copy test sv"), buffer, 200);
+        CHECK((result == 12 && strcmp(buffer, "Copy test sv") == 0));
+        memset(buffer, 0, 200);
+        // std::string const&
+        result = System::String::CopyString(std::string("Copy test string"), buffer, 200);
+        CHECK((result == 16 && strcmp(buffer, "Copy test string") == 0));
+        memset(buffer, 0, 200);
+    }
+    {
+        char buffer[5];
+        // const char* (nullptr)
+        result = System::String::CopyString(nullptr, buffer, 5);
+        CHECK((result == 0 && strcmp(buffer, "") == 0));
+        memset(buffer, 0, 5);
+        // const char*
+        result = System::String::CopyString("Copy test", buffer, 5);
+        CHECK((result == 4 && strcmp(buffer, "Copy") == 0));
+        memset(buffer, 0, 5);
+        // System::StringView
+        result = System::String::CopyString(System::StringView("Copy test sv"), buffer, 5);
+        CHECK((result == 4 && strcmp(buffer, "Copy") == 0));
+        memset(buffer, 0, 5);
+        // std::string const&
+        result = System::String::CopyString(std::string("Copy test string"), buffer, 5);
+        CHECK((result == 4 && strcmp(buffer, "Copy") == 0));
+        memset(buffer, 0, 5);
+    }
+
+    //
+    {
+        char buffer[200];
+        // const char* (nullptr)
+        result = System::String::CopyString(nullptr, buffer);
+        CHECK((result == 0 && strcmp(buffer, "") == 0));
+        memset(buffer, 0, 200);
+        // const char*
+        result = System::String::CopyString("Copy test", buffer);
+        CHECK((result == 9 && strcmp(buffer, "Copy test") == 0));
+        memset(buffer, 0, 200);
+        // System::StringView
+        result = System::String::CopyString(System::StringView("Copy test sv"), buffer);
+        CHECK((result == 12 && strcmp(buffer, "Copy test sv") == 0));
+        memset(buffer, 0, 200);
+        // std::string const&
+        result = System::String::CopyString(std::string("Copy test string"), buffer);
+        CHECK((result == 16 && strcmp(buffer, "Copy test string") == 0));
+        memset(buffer, 0, 200);
+    }
+    {
+        char buffer[5];
+        // const char* (nullptr)
+        result = System::String::CopyString(nullptr, buffer);
+        CHECK((result == 0 && strcmp(buffer, "") == 0));
+        memset(buffer, 0, 5);
+        // const char*
+        result = System::String::CopyString("Copy test", buffer);
+        CHECK((result == 4 && strcmp(buffer, "Copy") == 0));
+        memset(buffer, 0, 5);
+        // System::StringView
+        result = System::String::CopyString(System::StringView("Copy test sv"), buffer);
+        CHECK((result == 4 && strcmp(buffer, "Copy") == 0));
+        memset(buffer, 0, 5);
+        // std::string const&
+        result = System::String::CopyString(std::string("Copy test string"), buffer);
+        CHECK((result == 4 && strcmp(buffer, "Copy") == 0));
+        memset(buffer, 0, 5);
+    }
 }

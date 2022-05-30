@@ -23,8 +23,22 @@
 #include <cstdint>
 #include <iterator>
 
+#include "StringView.hpp"
+#include "StringSwitch.hpp"
+
 namespace System {
 namespace String {
+
+///////////////////////////////////////////////////////////
+// Implementations
+
+namespace details {
+    char* CloneString(System::StringView src);
+
+    size_t CopyString(System::StringView src, char *dst, size_t dst_size);
+}
+
+
 
 void LeftTrim(std::string& str);
 
@@ -60,7 +74,7 @@ inline std::string Join(IteratorType begin, IteratorType end, const std::string&
     std::string res;
 
     if (begin != end)
-        res += *begin++;
+        res = *begin++;
 
     while (begin != end)
     {
@@ -78,21 +92,63 @@ inline std::string Join(T const& container, const std::string& sep)
 }
 
 // Clone a string allocated with the "new" operator, if str is nullptr, an empty string ("") will be returned, NOT nullptr !
-char* CloneString(const char* str);
+inline char* CloneString(const char* str)
+{
+    if (str == nullptr)
+        return details::CloneString(System::StringView(""));
 
-char* CloneString(std::string const& str);
+    return details::CloneString(System::StringView(str, strlen(str)));
+}
+
+inline char* CloneString(std::string const& str)
+{
+    return details::CloneString(System::StringView(str));
+}
+
+inline char* CloneString(System::StringView str)
+{
+    return details::CloneString(str);
+}
 
 // Will always end the C-String with a null char.
-size_t CopyString(std::string const& src, char* dst, size_t dst_size);
+inline size_t CopyString(const char* src, char* dst, size_t dst_size)
+{
+    if (src == nullptr)
+        return details::CopyString(System::StringView(""), dst, dst_size);
+
+    return details::CopyString(System::StringView(src, strlen(src)), dst, dst_size);
+}
+
+inline size_t CopyString(System::StringView src, char* dst, size_t dst_size)
+{
+    return details::CopyString(src, dst, dst_size);
+}
+
+inline size_t CopyString(std::string const& src, char* dst, size_t dst_size) 
+{
+    return details::CopyString(System::StringView(src), dst, dst_size);
+}
+
+template<size_t N>
+inline size_t CopyString(const char* src, char(&dst)[N])
+{
+    if (src == nullptr)
+        return details::CopyString(System::StringView(""), dst, N);
+
+    return details::CopyString(System::StringView(src, strlen(src)), dst, N);
+}
+
+template<size_t N>
+inline size_t CopyString(System::StringView src, char(&dst)[N])
+{
+    return details::CopyString(src, dst, N);
+}
 
 template<size_t N>
 inline size_t CopyString(std::string const& src, char(&dst)[N])
 {
-    return CopyString(src, dst, N);
+    return details::CopyString(System::StringView(src), dst, N);
 }
 
 }
 }
-
-#include "StringView.hpp"
-#include "StringSwitch.hpp"
