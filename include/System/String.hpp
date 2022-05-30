@@ -21,6 +21,7 @@
 
 #include <string>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
 
 #include "StringView.hpp"
