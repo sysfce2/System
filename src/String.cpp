@@ -26,30 +26,11 @@
 
 namespace System {
 namespace String {
-
 namespace details {
-    template<typename T>
-    static inline void ToLower(T begin, T end)
-    {
-        std::transform(begin, end, begin, [](char c)
-        {
-            return std::tolower((unsigned char)c);
-        });
-    }
-
-    template<typename T>
-    static inline void ToUpper(T begin, T end)
-    {
-        std::transform(begin, end, begin, [](char c)
-        {
-            return std::toupper((unsigned char)c);
-        });
-    }
-}
 
 void LeftTrim(std::string& str)
 {
-    str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](const char& c)
+    str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](const char c)
     {
         return !std::isspace((unsigned char)c);
     }));
@@ -57,30 +38,19 @@ void LeftTrim(std::string& str)
 
 void RightTrim(std::string& str)
 {
-    str.erase(std::find_if(str.rbegin(), str.rend(), [](const char& c)
+    str.erase(std::find_if(str.rbegin(), str.rend(), [](const char c)
     {
         return !std::isspace((unsigned char)c);
     }).base(), str.end());
 }
 
-void Trim(std::string& str)
+void ToUpper(char* str, size_t len)
 {
-    LeftTrim(str);
-    RightTrim(str);
-}
-
-std::string CopyLeftTrim(std::string const& str)
-{
-    std::string r(str);
-    LeftTrim(r);
-    return r;
-}
-
-std::string CopyRightTrim(std::string const& str)
-{
-    std::string r(str);
-    RightTrim(r);
-    return r;
+    while(len--)
+    {
+        unsigned char c = (unsigned char)*str;
+        *str++ = std::toupper(c);
+    }
 }
 
 void ToLower(char* str, size_t len)

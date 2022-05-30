@@ -33,6 +33,10 @@ namespace String {
 // Implementations
 
 namespace details {
+    void LeftTrim(std::string& str);
+
+    void RightTrim(std::string& str);
+
     void ToUpper(char* str, size_t len);
 
     void ToLower(char* str, size_t len);
@@ -43,16 +47,93 @@ namespace details {
 }
 
 
+inline void LeftTrim(std::string& str)
+{
+    details::LeftTrim(str);
+}
 
-void LeftTrim(std::string& str);
+inline void RightTrim(std::string& str)
+{
+    details::RightTrim(str);
+}
 
-void RightTrim(std::string& str);
+inline void Trim(std::string& str)
+{
+    LeftTrim(str);
+    RightTrim(str);
+}
 
-void Trim(std::string& str);
+inline std::string CopyLeftTrim(const char* str)
+{
+    if (str == nullptr)
+        return std::string();
 
-std::string CopyLeftTrim(std::string const& str);
+    std::string r(str);
+    LeftTrim(r);
+    return r;
+}
 
-std::string CopyRightTrim(std::string const& str);
+inline std::string CopyLeftTrim(System::StringView str)
+{
+    std::string r(str.to_string());
+    LeftTrim(r);
+    return r;
+}
+
+inline std::string CopyLeftTrim(std::string const& str)
+{
+    std::string r(str);
+    LeftTrim(r);
+    return r;
+}
+
+inline std::string CopyRightTrim(const char* str)
+{
+    if (str == nullptr)
+        return std::string();
+
+    std::string r(str);
+    RightTrim(r);
+    return r;
+}
+
+inline std::string CopyRightTrim(System::StringView str)
+{
+    std::string r(str.to_string());
+    RightTrim(r);
+    return r;
+}
+
+inline std::string CopyRightTrim(std::string const& str)
+{
+    std::string r(str);
+    RightTrim(r);
+    return r;
+}
+
+inline std::string CopyTrim(const char* str)
+{
+    if (str == nullptr)
+        return std::string();
+
+    std::string r(str);
+    Trim(r);
+    return r;
+}
+
+inline std::string CopyTrim(System::StringView str)
+{
+    std::string r(str.to_string());
+    Trim(r);
+    return r;
+}
+
+inline std::string CopyTrim(std::string const& str)
+{
+    std::string r(str);
+    Trim(r);
+    return r;
+}
 
 inline void ToLower(std::string& str)
 {

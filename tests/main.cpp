@@ -20,9 +20,9 @@ TEST_CASE("Load library", "[loadlibrary]")
     std::string lib_path = System::Filesystem::Join(System::Filesystem::Dirname(System::GetExecutablePath()), "shared");
     shared.OpenLibrary(lib_path, true);
     std::cout << "From executable: " << std::endl
-        << "  Executable path       : " << System::GetExecutablePath() << std::endl
-        << "  Executable module path: " << System::GetModulePath() << std::endl
-        << "  Library module path   : " << shared.GetLibraryPath() << std::endl << std::endl;
+              << "  Executable path       : " << System::GetExecutablePath() << std::endl
+              << "  Executable module path: " << System::GetModulePath() << std::endl
+              << "  Library module path   : " << shared.GetLibraryPath() << std::endl << std::endl;
 }
 
 TEST_CASE("Show modules", "[showmodules]")
@@ -37,30 +37,26 @@ TEST_CASE("Show modules", "[showmodules]")
 
 TEST_CASE("Dirname", "[dirname]")
 {
+    // Absolute path checks
 #if defined(SYSTEM_OS_WINDOWS)
     CHECK(System::Filesystem::Dirname("D:\\test1\\test2\\//\\\\\\\\//test3\\") == "D:\\test1\\test2\\test3");
     CHECK(System::Filesystem::Dirname("D:\\test1\\test2/test3") == "D:\\test1\\test2");
     CHECK(System::Filesystem::Dirname("D:\\test1\\test2") == "D:\\test1");
     CHECK(System::Filesystem::Dirname("D:\\test1") == "D:");
     CHECK(System::Filesystem::Dirname("D:") == "");
-
-    CHECK(System::Filesystem::Dirname("test1/test2") == "test1");
-    CHECK(System::Filesystem::Dirname("test1\\test2") == "test1");
-    CHECK(System::Filesystem::Dirname("test1") == "");
-    CHECK(System::Filesystem::Dirname("") == "");
-
 #else
     CHECK(System::Filesystem::Dirname("/test1/test2\\//\\\\\\\\//test3\\") == "/test1/test2/test3");
     CHECK(System::Filesystem::Dirname("/test1/test2\\test3") == "/test1/test2");
     CHECK(System::Filesystem::Dirname("/test1/test2") == "/test1");
     CHECK(System::Filesystem::Dirname("/test1") == "/");
     CHECK(System::Filesystem::Dirname("/") == "");
+#endif
 
+    // Relative path checks
     CHECK(System::Filesystem::Dirname("test1/test2") == "test1");
     CHECK(System::Filesystem::Dirname("test1\\test2") == "test1");
     CHECK(System::Filesystem::Dirname("test1") == "");
     CHECK(System::Filesystem::Dirname("") == "");
-#endif
 }
 
 TEST_CASE("Filename", "[filename]")
@@ -92,6 +88,102 @@ TEST_CASE("Join", "[join]")
     CHECK(System::Filesystem::Join("a", "b", "c") == "a" TSEP "b" TSEP "c");
 
 #undef TSEP
+}
+
+TEST_CASE("LeftTrim", "[left_trim]")
+{
+    // inplace std::string&
+    {
+        std::string test("  left trim  ");
+        System::String::LeftTrim(test);
+        CHECK(test == "left trim  ");
+    }
+
+    // copy char* (nullptr)
+    {
+        // don't crash
+        std::string r = System::String::CopyLeftTrim(nullptr);
+        CHECK(r == "");
+    }
+    // copy char*
+    {
+        std::string r = System::String::CopyLeftTrim("  left trim  ");
+        CHECK(r == "left trim  ");
+    }
+    // copy std::string const&
+    {
+        std::string r = System::String::CopyLeftTrim(std::string("  left trim  "));
+        CHECK(r == "left trim  ");
+    }
+    // copy System::StringView
+    {
+        std::string r = System::String::CopyLeftTrim(System::StringView("  left trim  "));
+        CHECK(r == "left trim  ");
+    }
+}
+
+TEST_CASE("RightTrim", "[right_trim]")
+{
+    // inplace std::string&
+    {
+        std::string test("  right trim  ");
+        System::String::RightTrim(test);
+        CHECK(test == "  right trim");
+    }
+
+    // copy char* (nullptr)
+    {
+        // don't crash
+        std::string r = System::String::CopyRightTrim(nullptr);
+        CHECK(r == "");
+    }
+    // copy char*
+    {
+        std::string r = System::String::CopyRightTrim("  right trim  ");
+        CHECK(r == "  right trim");
+    }
+    // copy std::string const&
+    {
+        std::string r = System::String::CopyRightTrim(std::string("  right trim  "));
+        CHECK(r == "  right trim");
+    }
+    // copy System::StringView
+    {
+        std::string r = System::String::CopyRightTrim(System::StringView("  right trim  "));
+        CHECK(r == "  right trim");
+    }
+}
+
+TEST_CASE("Trim", "[trim]")
+{
+    // inplace std::string&
+    {
+        std::string test("  both end trim  ");
+        System::String::Trim(test);
+        CHECK(test == "both end trim");
+    }
+
+    // copy char* (nullptr)
+    {
+        // don't crash
+        std::string r = System::String::CopyTrim(nullptr);
+        CHECK(r == "");
+    }
+    // copy char*
+    {
+        std::string r = System::String::CopyTrim("  both end trim  ");
+        CHECK(r == "both end trim");
+    }
+    // copy std::string const&
+    {
+        std::string r = System::String::CopyTrim(std::string("  both end trim  "));
+        CHECK(r == "both end trim");
+    }
+    // copy System::StringView
+    {
+        std::string r = System::String::CopyTrim(System::StringView("  both end trim  "));
+        CHECK(r == "both end trim");
+    }
 }
 
 TEST_CASE("ToLower", "[to_lower]")
