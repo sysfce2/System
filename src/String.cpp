@@ -83,61 +83,14 @@ std::string CopyRightTrim(std::string const& str)
     return r;
 }
 
-std::string CopyTrim(std::string const& str)
+void ToLower(char* str, size_t len)
 {
-    std::string r(str);
-    LeftTrim(r);
-    RightTrim(r);
-    return r;
+    while (len--)
+    {
+        unsigned char c = (unsigned char)*str;
+        *str++ = std::tolower(c);
+    }
 }
-
-void ToLower(std::string& str)
-{
-    details::ToLower(str.begin(), str.end());
-}
-
-void ToLower(char* str)
-{
-    details::ToLower(str, str + strlen(str));
-}
-
-std::string CopyToLower(std::string const& str)
-{
-    std::string r(str);
-    details::ToLower(r.begin(), r.end());
-    return r;
-}
-
-std::string CopyToLower(const char* str)
-{
-    return CopyToLower(std::string{ str });
-}
-
-void ToUpper(std::string str)
-{
-    details::ToUpper(str.begin(), str.end());
-}
-
-void ToUpper(char* str)
-{
-    details::ToUpper(str, str + strlen(str));
-}
-
-std::string CopyUpper(std::string const& str)
-{
-    std::string r(str);
-    details::ToUpper(r.begin(), r.end());
-    return r;
-}
-
-std::string CopyUpper(const char* str)
-{
-    return CopyUpper(std::string{ str });
-}
-
-// Clone a string allocated with the "new" operator, if str is nullptr, an empty string ("") will be returned, NOT nullptr !
-namespace details
-{
 
 char* CloneString(System::StringView src)
 {

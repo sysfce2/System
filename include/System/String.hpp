@@ -33,6 +33,10 @@ namespace String {
 // Implementations
 
 namespace details {
+    void ToUpper(char* str, size_t len);
+
+    void ToLower(char* str, size_t len);
+
     char* CloneString(System::StringView src);
 
     size_t CopyString(System::StringView src, char *dst, size_t dst_size);
@@ -50,23 +54,73 @@ std::string CopyLeftTrim(std::string const& str);
 
 std::string CopyRightTrim(std::string const& str);
 
-std::string CopyTrim(std::string const& str);
+inline void ToLower(std::string& str)
+{
+    details::ToLower(&str[0], str.length());
+}
 
-void ToLower(std::string& str);
+inline void ToLower(char* str)
+{
+    if (str == nullptr)
+        return;
 
-void ToLower(char* str);
+    details::ToLower(str, strlen(str));
+}
 
-std::string CopyToLower(std::string const& str);
+inline std::string CopyLower(std::string const& str)
+{
+    std::string r(str);
+    details::ToLower(&r[0], r.length());
+    return r;
+}
 
-std::string CopyToLower(const char* str);
+inline std::string CopyLower(const char* str)
+{
+    std::string r(str == nullptr ? "" : str);
+    details::ToLower(&r[0], r.length());
+    return r;
+}
 
-void ToUpper(std::string str);
+inline std::string CopyLower(System::StringView str)
+{
+    std::string r = str.to_string();
+    details::ToLower(&r[0], r.length());
+    return r;
+}
 
-void ToUpper(char* str);
+inline void ToUpper(std::string& str)
+{
+    details::ToUpper(&str[0], str.length());
+}
 
-std::string CopyUpper(std::string const& str);
+inline void ToUpper(char* str)
+{
+    if (str == nullptr)
+        return;
 
-std::string CopyUpper(const char* str);
+    details::ToUpper(str, strlen(str));
+}
+
+inline std::string CopyUpper(std::string const& str)
+{
+    std::string r(str);
+    details::ToUpper(&r[0], r.length());
+    return r;
+}
+
+inline std::string CopyUpper(const char* str)
+{
+    std::string r(str == nullptr ? "" : str);
+    details::ToUpper(&r[0], r.length());
+    return r;
+}
+
+inline std::string CopyUpper(System::StringView str)
+{
+    std::string r = str.to_string();
+    details::ToUpper(&r[0], r.length());
+    return r;
+}
 
 template<typename IteratorType>
 inline std::string Join(IteratorType begin, IteratorType end, const std::string& sep)

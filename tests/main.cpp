@@ -94,6 +94,90 @@ TEST_CASE("Join", "[join]")
 #undef TSEP
 }
 
+TEST_CASE("ToLower", "[to_lower]")
+{
+    // inplace char* (nullptr)
+    {
+        // don't crash
+        System::String::ToLower(nullptr);
+    }
+    // inplace char*
+    {
+        char buffer[] = "TO LOWER";
+        System::String::ToLower(buffer);
+        CHECK(strcmp(buffer, "to lower") == 0);
+    }
+    // inplace std::string&
+    {
+        std::string buffer = "TO LOWER";
+        System::String::ToLower(buffer);
+        CHECK(buffer == "to lower");
+    }
+    // copy const char*
+    {
+        char buffer[] = "TO LOWER";
+        std::string result = System::String::CopyLower(buffer);
+        CHECK(strcmp(buffer, "TO LOWER") == 0);
+        CHECK(result == "to lower");
+    }
+    // copy std::string const&
+    {
+        std::string buffer = "TO LOWER";
+        std::string result = System::String::CopyLower(buffer);
+        CHECK(buffer == "TO LOWER");
+        CHECK(result == "to lower");
+    }
+    // copy System::StringView
+    {
+        System::StringView buffer = "TO LOWER";
+        std::string result = System::String::CopyLower(buffer);
+        CHECK(strcmp(&buffer[0], "TO LOWER") == 0);
+        CHECK(result == "to lower");
+    }
+}
+
+TEST_CASE("ToUpper", "[to_upper]")
+{
+    // inplace char* (nullptr)
+    {
+        // don't crash
+        System::String::ToUpper(nullptr);
+    }
+    // inplace char*
+    {
+        char buffer[] = "to upper";
+        System::String::ToUpper(buffer);
+        CHECK(strcmp(buffer, "TO UPPER") == 0);
+    }
+    // inplace std::string&
+    {
+        std::string buffer = "to upper";
+        System::String::ToUpper(buffer);
+        CHECK(buffer == "TO UPPER");
+    }
+    // copy const char*
+    {
+        char buffer[] = "to upper";
+        std::string result = System::String::CopyUpper(buffer);
+        CHECK(strcmp(buffer, "to upper") == 0);
+        CHECK(result == "TO UPPER");
+    }
+    // copy std::string const&
+    {
+        std::string buffer = "to upper";
+        std::string result = System::String::CopyUpper(buffer);
+        CHECK(buffer == "to upper");
+        CHECK(result == "TO UPPER");
+    }
+    // copy System::StringView
+    {
+        System::StringView buffer = "to upper";
+        std::string result = System::String::CopyUpper(buffer);
+        CHECK(strcmp(&buffer[0], "to upper") == 0);
+        CHECK(result == "TO UPPER");
+    }
+}
+
 TEST_CASE("CloneString", "[clone_string]")
 {
     char* result = nullptr;
