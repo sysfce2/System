@@ -324,6 +324,22 @@ std::vector<std::string> GetProcArgs()
 
 #else
 
+static int IsProcessTranslated()
+{
+    int ret = 0;
+    size_t size = sizeof(ret);
+
+    // Call the sysctl and if successful return the result
+    if (sysctlbyname("sysctl.proc_translated", &ret, &size, NULL, 0) != -1)
+        return ret;
+
+    // If "sysctl.proc_translated" is not present then must be native
+    if (errno == ENOENT)
+        return 0;
+
+    return -1;
+}
+
 std::chrono::system_clock::time_point GetBootTime()
 {
     static std::chrono::system_clock::time_point boottime{};
@@ -356,16 +372,37 @@ std::string GetExecutablePath()
     if (task_info(t, TASK_DYLD_INFO, reinterpret_cast<task_info_t>(&dyld_info), &count) == KERN_SUCCESS)
     {
         dyld_all_image_infos *dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
-        for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
-        {// For now I don't know how to be sure to get the executable path
-         // but looks like the 1st entry is the executable path
-            exec_path = dyld_img_infos->infoArray[i].imageFilePath;
-            size_t pos;
-            while((pos = exec_path.find("/./")) != std::string::npos)
+        if (IsProcessTranslated() == 1)
+        {
+            for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
             {
-                exec_path.replace(pos, 3, "/");
+                exec_path = dyld_img_infos->infoArray[i].imageFilePath;
+                if (strcasestr(exec_path.c_str(), "rosetta") != nullptr)
+                    continue;
+
+                // In case of a translated process (Rosetta maybe ?), the executable path is not the first entry.
+                size_t pos;
+                while ((pos = exec_path.find("/./")) != std::string::npos)
+                {
+                    exec_path.replace(pos, 3, "/");
+                }
+                break;
             }
-            break;
+        }
+        else
+        {
+            for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
+            {
+                // For now I don't know how to be sure to get the executable path
+                // but looks like the 1st entry is the executable path
+                exec_path = dyld_img_infos->infoArray[i].imageFilePath;
+                size_t pos;
+                while ((pos = exec_path.find("/./")) != std::string::npos)
+                {
+                    exec_path.replace(pos, 3, "/");
+                }
+                break;
+            }
         }
     }
 
