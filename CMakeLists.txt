@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(BUILD_TESTS "Build tests." OFF)
+option(BUILD_SYSTEMLIB_TESTS "Build tests." OFF)
 
 set(SYSTEM_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/System.h
@@ -74,7 +74,7 @@ target_include_directories(system
 add_library(System::System ALIAS system)
 set_target_properties(system PROPERTIES EXPORT_NAME System)
 
-if(${BUILD_TESTS})
+if(${BUILD_SYSTEMLIB_TESTS})
   
 add_executable(test_app
   tests/main.cpp

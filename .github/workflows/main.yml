@@ -22,7 +22,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          cmake ${{ github.workspace }}/CMakeLists.txt -DBUILD_TESTS=ON -S . -B build
+          cmake ${{ github.workspace }}/CMakeLists.txt -DBUILD_SYSTEMLIB_TESTS=ON -S . -B build
           cmake --build build
           #find build
           build/test_app
@@ -31,7 +31,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          cmake ${{ github.workspace }}/CMakeLists.txt -DBUILD_TESTS=ON -S . -B build
+          cmake ${{ github.workspace }}/CMakeLists.txt -DBUILD_SYSTEMLIB_TESTS=ON -S . -B build
           cmake --build build
           #find build
           build/test_app
@@ -40,7 +40,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: powershell
         run: |
-          cmake ${{ github.workspace }}\CMakeLists.txt -DBUILD_TESTS=ON -S . -B build
+          cmake ${{ github.workspace }}\CMakeLists.txt -DBUILD_SYSTEMLIB_TESTS=ON -S . -B build
           cmake --build build
           #Get-ChildItem -Recurse build
           build\Debug\test_app.exe
