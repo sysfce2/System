@@ -18,6 +18,7 @@ option(BUILD_SYSTEMLIB_TESTS "Build tests." OFF)
 
 set(SYSTEM_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/System.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/SystemMacro.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/Filesystem.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/Library.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/SystemDetector.h
@@ -31,6 +32,7 @@ set(SYSTEM_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/ScopedLock.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/StringSwitch.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/StringView.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/LoopBreak.hpp
 )
 
 add_library(system
