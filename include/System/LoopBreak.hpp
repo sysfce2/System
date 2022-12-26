@@ -19,8 +19,8 @@
 
 #pragma once
 
-#define SYSTEM_LOOP_NAME_CAT_(x,y) x##y
-#define SYSTEM_LOOP_NAME_CAT (x,y) SYSTEM_LOOP_NAME_CAT_(x,y)
+#define SYSTEM_LOOP_NAME_CAT(x,y) x##y
+//#define SYSTEM_LOOP_NAME_CAT (x,y) SYSTEM_LOOP_NAME_CAT_(x,y)
 
 #define SYSTEM_LOOP_NAME(name) \
 	if (constexpr bool _namedloopInvalidBreakOrContinue = false) \
