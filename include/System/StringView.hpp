@@ -161,6 +161,26 @@ public:
         return std::string::npos;
     }
 
+    constexpr size_t rfind(type const& string, const size_t offset = 0) const
+    {
+        if (_length < string._length)
+            return std::string::npos;
+
+        for (size_t i = offset + string._length; i < _length; ++i)
+        {
+            for (size_t j = 0; j < string._length; ++j)
+            {
+                if (_string[_length - i + j] != string[j])
+                    break;
+
+                if (j == (string._length - 1))
+                    return _length - i;
+            }
+        }
+
+        return std::string::npos;
+    }
+
     constexpr size_t find_not(type const& string, const size_t offset = 0) const
     {
         if (_length < string._length)
