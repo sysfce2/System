@@ -42,8 +42,7 @@ namespace Detail {
 // switch case on a string
 constexpr hash_type Hash(const char* input, size_t len) { return (len > 0 ? static_cast<hash_type>(*input) + 33 * Hash(input + 1, len - 1) : 5381); }
 
-template<size_t N>
-constexpr hash_type Hash(const char(&input)[N]) { return Hash(input, N-1); }
+constexpr hash_type Hash(const char* input) { return Hash(input, detail::strlen(input)); }
 
 constexpr hash_type Hash(System::StringView sv) { return Hash(sv.data(), sv.length()); }
 
@@ -53,8 +52,7 @@ inline hash_type Hash(const std::string& input) { return Hash(input.c_str(), inp
 
 constexpr hash_type IHash(const char* input, size_t len) { return (len > 0 ? static_cast<hash_type>(Detail::lower_char(*input)) + 33 * IHash(input + 1, len - 1) : 5381); }
 
-template<size_t N>
-constexpr inline hash_type IHash(const char(&input)[N]) { return IHash(input, N - 1); }
+constexpr inline hash_type IHash(const char *input) { return IHash(input, detail::strlen(input)); }
 
 constexpr hash_type IHash(System::StringView sv) { return IHash(sv.data(), sv.length()); }
 
