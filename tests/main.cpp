@@ -3,6 +3,7 @@
 #include <System/Filesystem.h>
 #include <System/SystemDetector.h>
 #include <System/String.hpp>
+#include <System/TypeName.hpp>
 
 #include <iostream>
 
@@ -12,6 +13,62 @@
 int main(int argc, char *argv[])
 {
     return Catch::Session().run(argc, argv);
+}
+
+class TypeNameTestClass
+{};
+
+struct TypeNameTestStruct
+{};
+
+template<typename T>
+struct XXXX
+{};
+
+TEST_CASE("Type name", "[TypeName]")
+{
+    {
+        TypeNameTestClass  test1, *pointerTest1 = &test1, **pointerTest11 = &pointerTest1, ***pointerTest111 = &pointerTest11;
+        TypeNameTestStruct test2, *pointerTest2 = &test2, **pointerTest22 = &pointerTest2, ***pointerTest222 = &pointerTest22;
+
+#if defined(SYSTEM_OS_APPLE)
+        CHECK(System::TypeName::TypeName<TypeNameTestClass>().to_string() == "TypeNameTestClass");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass*>().to_string() == "TypeNameTestClass *");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass**>().to_string() == "TypeNameTestClass **");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass&>().to_string() == "TypeNameTestClass &");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass&&>().to_string() == "TypeNameTestClass &&");
+#else
+        CHECK(System::TypeName::TypeName<TypeNameTestClass>().to_string() == "TypeNameTestClass");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass*>().to_string() == "TypeNameTestClass*");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass**>().to_string() == "TypeNameTestClass**");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass&>().to_string() == "TypeNameTestClass&");
+        CHECK(System::TypeName::TypeName<TypeNameTestClass&&>().to_string() == "TypeNameTestClass&&");
+#endif
+
+        CHECK(System::TypeName::BaseTypeName(test1).to_string() == "TypeNameTestClass");
+        CHECK(System::TypeName::BaseTypeName(pointerTest1).to_string() == "TypeNameTestClass");
+        CHECK(System::TypeName::BaseTypeName(pointerTest11).to_string() == "TypeNameTestClass");
+        CHECK(System::TypeName::BaseTypeName(pointerTest111).to_string() == "TypeNameTestClass");
+
+#if defined(SYSTEM_OS_APPLE)
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct>().to_string() == "TypeNameTestStruct");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct*>().to_string() == "TypeNameTestStruct *");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct**>().to_string() == "TypeNameTestStruct **");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct&>().to_string() == "TypeNameTestStruct &");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct&&>().to_string() == "TypeNameTestStruct &&");
+#else
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct>().to_string() == "TypeNameTestStruct");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct*>().to_string() == "TypeNameTestStruct*");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct**>().to_string() == "TypeNameTestStruct**");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct&>().to_string() == "TypeNameTestStruct&");
+        CHECK(System::TypeName::TypeName<TypeNameTestStruct&&>().to_string() == "TypeNameTestStruct&&");
+#endif
+
+        CHECK(System::TypeName::BaseTypeName(test2).to_string() == "TypeNameTestStruct");
+        CHECK(System::TypeName::BaseTypeName(pointerTest2).to_string() == "TypeNameTestStruct");
+        CHECK(System::TypeName::BaseTypeName(pointerTest22).to_string() == "TypeNameTestStruct");
+        CHECK(System::TypeName::BaseTypeName(pointerTest222).to_string() == "TypeNameTestStruct");
+    }
 }
 
 TEST_CASE("Load library", "[loadlibrary]")
@@ -52,7 +109,7 @@ TEST_CASE("Load library", "[loadlibrary]")
         CHECK(tmp == "shared.so");
     }
     CHECK(System::Library::GetLibraryExtension() == ".so");
-#elif defined(SYSTEM_OS_MACOS)
+#elif defined(SYSTEM_OS_APPLE)
     {
         auto tmp = System::Filesystem::Filename(System::GetExecutablePath());
         CHECK(tmp == "test_app");
