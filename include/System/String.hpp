@@ -20,6 +20,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
@@ -284,6 +285,23 @@ template<size_t N>
 inline size_t CopyString(std::string const& src, char(&dst)[N])
 {
     return details::CopyString(System::StringView(src), dst, N);
+}
+
+inline std::vector<std::string> SplitString(std::string const& str, char delimiter)
+{
+    std::vector<std::string> result;
+    int pos = 0;
+    int oldPos = 0;
+
+    while ((pos = str.find(delimiter, oldPos)) != std::string::npos)
+    {
+        result.emplace_back(std::string(str.begin() + oldPos, str.begin() + pos));
+        oldPos = ++pos;
+    }
+
+    result.emplace_back(std::string(str.begin() + oldPos, str.end()));
+
+    return result;
 }
 
 }

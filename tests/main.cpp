@@ -200,6 +200,28 @@ TEST_CASE("Join", "[join]")
 #undef TSEP
 }
 
+TEST_CASE("Split string", "[SplitString]")
+{
+    auto array = System::String::SplitString("a,b,,c,d,", ',');
+
+    CHECK(array.size() == 6);
+    CHECK(array[0] == "a");
+    CHECK(array[1] == "b");
+    CHECK(array[2] == "");
+    CHECK(array[3] == "c");
+    CHECK(array[4] == "d");
+    CHECK(array[5] == "");
+
+    array = System::String::SplitString("aa", ',');
+    CHECK(array.size() == 1);
+    CHECK(array[0] == "aa");
+
+    array = System::String::SplitString(",", ',');
+    CHECK(array.size() == 2);
+    CHECK(array[0] == "");
+    CHECK(array[1] == "");
+}
+
 TEST_CASE("LeftTrim", "[left_trim]")
 {
     // inplace std::string&
