@@ -39,5 +39,72 @@ std::string Utf32ToUtf8(std::u32string const& str);
 // Size of UTF8 chars (not the size of the byte buffer).
 size_t EncodedLength(std::string const& str);
 
+namespace Base64
+{
+
+std::size_t Encode(void* dest, void const* src, std::size_t len, bool padding);
+
+std::pair<std::size_t, std::size_t> Decode(void* dest, char const* src, std::size_t len);
+
+inline std::size_t constexpr EncodedSize(std::size_t n)
+{
+    return 4 * ((n + 2) / 3);
+}
+
+inline std::size_t constexpr DecodedSize(std::size_t n)
+{
+    return n * 3 / 4;
+}
+
+inline std::string Encode(std::uint8_t const* data, std::size_t len, bool padding)
+{
+    std::string dest;
+    dest.resize(EncodedSize(len));
+    dest.resize(Encode(&dest[0], data, len, padding));
+    return dest;
+}
+
+inline std::string Encode(std::string const& s, bool padding)
+{
+    return Encode(reinterpret_cast <std::uint8_t const*>(s.data()), s.size(), padding);
+}
+
+inline std::string Decode(std::string const& data)
+{
+    std::string dest;
+    dest.resize(DecodedSize(data.size()));
+    auto const result = Decode(&dest[0], data.data(), data.size());
+    dest.resize(result.first);
+    return dest;
+}
+
+std::size_t UrlEncode(void* dest, void const* src, std::size_t len, bool padding);
+
+std::pair<std::size_t, std::size_t> UrlDecode(void* dest, char const* src, std::size_t len);
+
+inline std::string UrlEncode(std::uint8_t const* data, std::size_t len, bool padding)
+{
+    std::string dest;
+    dest.resize(EncodedSize(len));
+    dest.resize(UrlEncode(&dest[0], data, len, padding));
+    return dest;
+}
+
+inline std::string UrlEncode(std::string const& s, bool padding)
+{
+    return UrlEncode(reinterpret_cast <std::uint8_t const*>(s.data()), s.size(), padding);
+}
+
+inline std::string UrlDecode(std::string const& data)
+{
+    std::string dest;
+    dest.resize(DecodedSize(data.size()));
+    auto const result = UrlDecode(&dest[0], data.data(), data.size());
+    dest.resize(result.first);
+    return dest;
+}
+
+}
+
 }
 }

@@ -4,6 +4,7 @@
 #include <System/SystemDetector.h>
 #include <System/String.hpp>
 #include <System/TypeName.hpp>
+#include <System/Encoding.hpp>
 
 #include <iostream>
 
@@ -13,6 +14,33 @@
 int main(int argc, char *argv[])
 {
     return Catch::Session().run(argc, argv);
+}
+
+TEST_CASE("Base64", "[base64]")
+{
+    CHECK(System::Encoding::Base64::Encode(R"({ "json_key": "json_value" })", true) == "eyAianNvbl9rZXkiOiAianNvbl92YWx1ZSIgfQ==");
+    CHECK(System::Encoding::Base64::Encode(R"({ "json_key": "json_value" })", false) == "eyAianNvbl9rZXkiOiAianNvbl92YWx1ZSIgfQ");
+
+    CHECK(System::Encoding::Base64::Decode("eyAianNvbl9rZXkiOiAianNvbl92YWx1ZSIgfQ==") == R"({ "json_key": "json_value" })");
+    CHECK(System::Encoding::Base64::Decode("eyAianNvbl9rZXkiOiAianNvbl92YWx1ZSIgfQ") == R"({ "json_key": "json_value" })");
+
+    CHECK(System::Encoding::Base64::Encode("ûûûûûûûûû" , true ) == "+/v7+/v7+/v7");
+    CHECK(System::Encoding::Base64::Encode("ûûûûûûûûû" , false) == "+/v7+/v7+/v7");
+    CHECK(System::Encoding::Base64::Encode("ûûûûûûûûûû", true ) == "+/v7+/v7+/v7+w==");
+    CHECK(System::Encoding::Base64::Encode("ûûûûûûûûûû", false) == "+/v7+/v7+/v7+w");
+
+    CHECK(System::Encoding::Base64::UrlEncode("ûûûûûûûûû" , true ) == "-_v7-_v7-_v7");
+    CHECK(System::Encoding::Base64::UrlEncode("ûûûûûûûûû" , false) == "-_v7-_v7-_v7");
+    CHECK(System::Encoding::Base64::UrlEncode("ûûûûûûûûûû", true ) == "-_v7-_v7-_v7-w==");
+    CHECK(System::Encoding::Base64::UrlEncode("ûûûûûûûûûû", false) == "-_v7-_v7-_v7-w");
+
+    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7") == "ûûûûûûûûû");
+    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7+w==") == "ûûûûûûûûûû");
+    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7+w") == "ûûûûûûûûûû");
+
+    CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7")     == "ûûûûûûûûû");
+    CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7-w==") == "ûûûûûûûûûû");
+    CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7-w")   == "ûûûûûûûûûû");
 }
 
 class TypeNameTestClass
