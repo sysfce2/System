@@ -173,6 +173,11 @@ TEST_CASE("Show modules", "[showmodules]")
     }
 }
 
+TEST_CASE("List files", "[listfiles]")
+{
+    System::Filesystem::ListFiles("", true);
+}
+
 TEST_CASE("Dirname", "[dirname]")
 {
     // Absolute path checks

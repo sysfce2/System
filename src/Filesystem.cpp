@@ -303,10 +303,13 @@ static std::vector<std::wstring> ListFiles(std::wstring const& path, bool files_
     WIN32_FIND_DATAW hfind_data;
     HANDLE hfind = INVALID_HANDLE_VALUE;
 
-    std::wstring search_path = path;
+    std::wstring search_path(path);
 
-    if (*path.rbegin() != L'\\')
-        search_path += L'\\';
+    if (!search_path.empty())
+    {
+        if (*search_path.rbegin() != L'\\')
+            search_path += L'\\';
+    }
 
     search_path += L'*';
 
@@ -354,7 +357,7 @@ std::vector<std::string> ListFiles(std::string const& path, bool files_only, boo
     std::vector<std::string> files;
     std::wstring wpath(System::Encoding::Utf8ToWChar(path));
 
-    std::vector<std::wstring> wfiles(std::move(ListFiles(wpath, files_only, recursive)));
+    std::vector<std::wstring> wfiles(ListFiles(wpath, files_only, recursive));
 
     files.reserve(wfiles.size());
     std::transform(wfiles.begin(), wfiles.end(), std::back_inserter(files), [](std::wstring const& wFilename)
@@ -512,10 +515,13 @@ std::vector<std::string> ListFiles(std::string const& path, bool files_only, boo
 {
     std::vector<std::string> files;
 
-    std::string search_path = path;
+    std::string search_path(path);
 
-    if (*path.rbegin() != Separator)
-        search_path += Separator;
+    if (!search_path.empty())
+    {
+        if (*search_path.rbegin() != Separator)
+            search_path += Separator;
+    }
 
     DIR* dir = opendir(search_path.c_str());
     struct dirent* entry;
