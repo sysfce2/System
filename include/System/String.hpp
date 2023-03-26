@@ -290,8 +290,8 @@ inline size_t CopyString(std::string const& src, char(&dst)[N])
 inline std::vector<std::string> SplitString(std::string const& str, char delimiter)
 {
     std::vector<std::string> result;
-    int pos = 0;
-    int oldPos = 0;
+    size_t pos = 0;
+    size_t oldPos = 0;
 
     while ((pos = str.find(delimiter, oldPos)) != std::string::npos)
     {
