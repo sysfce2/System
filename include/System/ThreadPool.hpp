@@ -30,6 +30,9 @@
 #include <vector>
 #include <chrono>
 #include <list>
+#include <string>
+
+#include <System/System.h>
 
 namespace System {
 class ThreadPool
@@ -108,13 +111,13 @@ public:
     }
 
     // Stops all previous and creates new worker threads.
-    void Start(std::size_t worker_count = std::thread::hardware_concurrency())
+    void Start(std::size_t worker_count = std::thread::hardware_concurrency(), std::string pool_name = std::string())
     {
         Join();
 
         _StopWorkers = false;
         for (std::size_t i = 0; i < worker_count; ++i)
-            _Workers.emplace_back(std::bind(&ThreadPool::_WorkerLoop, this));
+            _Workers.emplace_back(std::bind(&ThreadPool::_WorkerLoop, this, pool_name.empty() ? pool_name : pool_name + ' ' + std::to_string(i)));
     }
 
     // Wait all workers to finish
@@ -144,8 +147,11 @@ public:
     }
 
 private:
-    void _WorkerLoop()
+    void _WorkerLoop(std::string worker_name)
     {
+        if (!worker_name.empty())
+            System::SetCurrentThreadName(worker_name);
+
         while (true)
         {
             auto task{ _NextTask() };
