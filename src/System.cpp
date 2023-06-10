@@ -190,7 +190,7 @@ bool SetCurrentThreadName(std::string const& thread_name)
     HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
     if (kernel32 != nullptr)
     {
-        auto pSetThreadDescription = (HRESULT(*)(HANDLE, PCWSTR))GetProcAddress(kernel32, "SetThreadDescription");
+        auto pSetThreadDescription = (HRESULT(WINAPI*)(HANDLE, PCWSTR))GetProcAddress(kernel32, "SetThreadDescription");
         if (pSetThreadDescription != nullptr)
             success = !FAILED(pSetThreadDescription(GetCurrentThread(), wname.c_str()));
     }
