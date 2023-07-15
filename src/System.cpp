@@ -43,6 +43,7 @@
         #include <sys/prctl.h>
     #else
         #include <sys/sysctl.h>
+        #include <mach-o/dyld.h>
         #include <mach-o/dyld_images.h>
     #endif
 
@@ -198,6 +199,11 @@ bool SetCurrentThreadName(std::string const& thread_name)
     return success;
 }
 
+TranslatedMode GetTranslatedMode()
+{
+    return TranslatedMode::Unavailable;
+}
+
 #elif defined(SYSTEM_OS_LINUX) || defined(SYSTEM_OS_APPLE)
 #ifdef SYSTEM_OS_LINUX
 
@@ -348,23 +354,12 @@ bool SetCurrentThreadName(std::string const& thread_name)
     return prctl(PR_SET_NAME, thread_name.c_str()) == 0;
 }
 
-#else
-
-static int IsProcessTranslated()
+TranslatedMode GetTranslatedMode()
 {
-    int ret = 0;
-    size_t size = sizeof(ret);
-
-    // Call the sysctl and if successful return the result
-    if (sysctlbyname("sysctl.proc_translated", &ret, &size, NULL, 0) != -1)
-        return ret;
-
-    // If "sysctl.proc_translated" is not present then must be native
-    if (errno == ENOENT)
-        return 0;
-
-    return -1;
+    return TranslatedMode::Unavailable;
 }
+
+#else
 
 std::chrono::system_clock::time_point GetBootTime()
 {
@@ -387,48 +382,20 @@ std::chrono::system_clock::time_point GetBootTime()
 
 std::string GetExecutablePath()
 {
-    std::string exec_path("./");
+    std::string exec_path;
+    uint32_t buf_size = 0;
 
-    task_dyld_info dyld_info;
-    task_t t;
-    pid_t pid = getpid();
-    task_for_pid(mach_task_self(), pid, &t);
-    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
-
-    if (task_info(t, TASK_DYLD_INFO, reinterpret_cast<task_info_t>(&dyld_info), &count) == KERN_SUCCESS)
+    if (_NSGetExecutablePath(&exec_path[0], &buf_size) == -1)
     {
-        dyld_all_image_infos *dyld_img_infos = reinterpret_cast<dyld_all_image_infos*>(dyld_info.all_image_info_addr);
-        if (IsProcessTranslated() == 1)
+        exec_path.resize(buf_size - 1);
+        if (_NSGetExecutablePath(&exec_path[0], &buf_size) == 0)
         {
-            for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
+            size_t pos;
+            while ((pos = exec_path.find("/./")) != std::string::npos)
             {
-                exec_path = dyld_img_infos->infoArray[i].imageFilePath;
-                if (strcasestr(exec_path.c_str(), "rosetta") != nullptr)
-                    continue;
-
-                // In case of a translated process (Rosetta maybe ?), the executable path is not the first entry.
-                size_t pos;
-                while ((pos = exec_path.find("/./")) != std::string::npos)
-                {
-                    exec_path.replace(pos, 3, "/");
-                }
-                break;
+                exec_path.replace(pos, 3, "/");
             }
-        }
-        else
-        {
-            for (int i = 0; i < dyld_img_infos->infoArrayCount; ++i)
-            {
-                // For now I don't know how to be sure to get the executable path
-                // but looks like the 1st entry is the executable path
-                exec_path = dyld_img_infos->infoArray[i].imageFilePath;
-                size_t pos;
-                while ((pos = exec_path.find("/./")) != std::string::npos)
-                {
-                    exec_path.replace(pos, 3, "/");
-                }
-                break;
-            }
+            return exec_path;
         }
     }
 
@@ -571,6 +538,22 @@ std::vector<std::string> GetProcArgs()
 bool SetCurrentThreadName(std::string const& thread_name)
 {
     return pthread_setname_np(thread_name.c_str()) == 0;
+}
+
+TranslatedMode GetTranslatedMode()
+{
+    int ret = 0;
+    size_t size = sizeof(ret);
+
+    // Call the sysctl and if successful return the result
+    if (sysctlbyname("sysctl.proc_translated", &ret, &size, NULL, 0) != -1)
+        return ret == 0 ? TranslatedMode::Native : TranslatedMode::Translated;
+
+    // If "sysctl.proc_translated" is not present then must be native
+    if (errno == ENOENT)
+        return TranslatedMode::Native;
+
+    return TranslatedMode::Unavailable;
 }
 
 #endif

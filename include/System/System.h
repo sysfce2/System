@@ -26,6 +26,13 @@
 
 namespace System {
 
+enum class TranslatedMode : uint8_t
+{
+	Unavailable,
+	Native,
+	Translated,
+};
+
 std::chrono::system_clock::time_point GetBootTime();
 std::chrono::microseconds GetUpTime();
 
@@ -44,5 +51,7 @@ std::string GetModulePath();
 std::vector<std::string> GetModules();
 // Set current thread name
 bool SetCurrentThreadName(std::string const& thread_name);
+// Get if the program is running in translated mode
+TranslatedMode GetTranslatedMode();
 
 }
