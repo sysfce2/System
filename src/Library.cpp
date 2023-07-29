@@ -37,6 +37,8 @@
     #if defined(SYSTEM_OS_LINUX)
         #include <dirent.h> // to open directories
         #include <unistd.h>
+        #include <sys/types.h>
+        #include <sys/stat.h>
 
         constexpr char library_suffix[] = ".so";
     #else
@@ -136,6 +138,7 @@ void* GetSymbol(void* handle, const char* symbol_name)
         struct dirent* dir_entry;
         std::string file_path;
         std::string res;
+        struct stat file_stat;
 
         dir = opendir(self.c_str());
         if (dir != nullptr)
@@ -149,6 +152,8 @@ void* GetSymbol(void* handle, const char* symbol_name)
                 }
 
                 file_path = System::ExpandSymlink(file_path);
+                if (stat(file_path.c_str(), &file_stat) != 0 || !S_ISREG(file_stat.st_mode))
+                    continue;
 
                 void* lib_handle = dlopen(file_path.c_str(), RTLD_NOW);
                 if (lib_handle != nullptr)
