@@ -35,6 +35,15 @@ namespace System {
 
             return len;
         }
+
+        constexpr size_t wcslen(const wchar_t* str)
+        {
+            size_t len = 0;
+            while (*str++ != L'\0')
+                ++len;
+
+            return len;
+        }
     }
 
 template<typename char_type>

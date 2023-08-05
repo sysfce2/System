@@ -36,27 +36,46 @@ namespace StringSwitch {
 #endif
 
 namespace Detail {
-    constexpr char lower_char(char c) { return ((c >= 'A' && c <= 'Z') ? c + 32 : c); }
+    constexpr char lower_char(char c) { return ((c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c); }
+
+    constexpr char lower_wchar(wchar_t c) { return ((c >= L'A' && c <= L'Z') ? c + (L'a' - L'A') : c); }
 }
 
 // switch case on a string
+// char
 constexpr hash_type Hash(const char* input, size_t len) { return (len > 0 ? static_cast<hash_type>(*input) + 33 * Hash(input + 1, len - 1) : 5381); }
 
 constexpr hash_type Hash(const char* input) { return Hash(input, detail::strlen(input)); }
 
-constexpr hash_type Hash(System::StringView sv) { return Hash(sv.data(), sv.length()); }
-
 inline hash_type Hash(const std::string& input) { return Hash(input.c_str(), input.length()); }
 
+// wchar
+constexpr hash_type Hash(const wchar_t* input, size_t len) { return (len > 0 ? static_cast<hash_type>(*input) + 33 * Hash(input + 1, len - 1) : 5381); }
 
+constexpr hash_type Hash(const wchar_t* input) { return Hash(input, detail::wcslen(input)); }
 
+inline hash_type Hash(const std::wstring& input) { return Hash(input.c_str(), input.length()); }
+
+// custom
+constexpr hash_type Hash(System::StringView sv) { return Hash(sv.data(), sv.length()); }
+
+// switch case on a case insensible string
+// char
 constexpr hash_type IHash(const char* input, size_t len) { return (len > 0 ? static_cast<hash_type>(Detail::lower_char(*input)) + 33 * IHash(input + 1, len - 1) : 5381); }
 
 constexpr inline hash_type IHash(const char *input) { return IHash(input, detail::strlen(input)); }
 
-constexpr hash_type IHash(System::StringView sv) { return IHash(sv.data(), sv.length()); }
-
 inline hash_type IHash(const std::string& input) { return IHash(input.c_str(), input.length()); }
+
+// wchar
+constexpr hash_type IHash(const wchar_t* input, size_t len) { return (len > 0 ? static_cast<hash_type>(Detail::lower_wchar(*input)) + 33 * IHash(input + 1, len - 1) : 5381); }
+
+constexpr inline hash_type IHash(const wchar_t* input) { return IHash(input, detail::wcslen(input)); }
+
+inline hash_type IHash(const std::wstring& input) { return IHash(input.c_str(), input.length()); }
+
+// custom
+constexpr hash_type IHash(System::StringView sv) { return IHash(sv.data(), sv.length()); }
 
 }
 }

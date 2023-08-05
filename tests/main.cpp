@@ -5,6 +5,7 @@
 #include <System/String.hpp>
 #include <System/TypeName.hpp>
 #include <System/Encoding.hpp>
+#include <System/StringSwitch.hpp>
 
 #include <iostream>
 
@@ -19,6 +20,112 @@ int main(int argc, char *argv[])
 TEST_CASE("Set thread name", "[thread_name]")
 {
     CHECK(System::SetCurrentThreadName("TestThreadName") == true);
+}
+
+TEST_CASE("String switch", "[string_switch]")
+{
+    {
+        std::string string("string_hash1");
+        std::string result;
+        constexpr auto string_hash1 = System::StringSwitch::Hash("string_hash1");
+        constexpr auto string_hash2 = System::StringSwitch::Hash("string_hash2");
+        constexpr auto string_hash3 = System::StringSwitch::Hash("string_hash3");
+        constexpr auto string_hash4 = System::StringSwitch::Hash("string_hash4");
+
+        switch (System::StringSwitch::Hash(string))
+        {
+            case string_hash1: result = "string_hash1"; break;
+            case string_hash2: result = "string_hash2"; break;
+            case string_hash3: result = "string_hash3"; break;
+            case string_hash4: result = "string_hash4"; break;
+        }
+
+        CHECK(result == string);
+
+        string = "string_hash3";
+        switch (System::StringSwitch::Hash(string))
+        {
+            case System::StringSwitch::Hash("string_hash1"): result = "string_hash1"; break;
+            case System::StringSwitch::Hash("string_hash2"): result = "string_hash2"; break;
+            case System::StringSwitch::Hash("string_hash3"): result = "string_hash3"; break;
+            case System::StringSwitch::Hash("string_hash4"): result = "string_hash4"; break;
+        }
+
+        CHECK(result == string);
+    }
+    {
+        std::wstring string(L"string_hash1");
+        std::wstring result;
+        constexpr auto string_hash1 = System::StringSwitch::Hash(L"string_hash1");
+        constexpr auto string_hash2 = System::StringSwitch::Hash(L"string_hash2");
+        constexpr auto string_hash3 = System::StringSwitch::Hash(L"string_hash3");
+        constexpr auto string_hash4 = System::StringSwitch::Hash(L"string_hash4");
+
+        switch (System::StringSwitch::Hash(string))
+        {
+            case string_hash1: result = L"string_hash1"; break;
+            case string_hash2: result = L"string_hash2"; break;
+            case string_hash3: result = L"string_hash3"; break;
+            case string_hash4: result = L"string_hash4"; break;
+        }
+
+        CHECK(result == string);
+
+        string = L"string_hash3";
+        switch (System::StringSwitch::Hash(string))
+        {
+            case System::StringSwitch::Hash(L"string_hash1"): result = L"string_hash1"; break;
+            case System::StringSwitch::Hash(L"string_hash2"): result = L"string_hash2"; break;
+            case System::StringSwitch::Hash(L"string_hash3"): result = L"string_hash3"; break;
+            case System::StringSwitch::Hash(L"string_hash4"): result = L"string_hash4"; break;
+        }
+
+        CHECK(result == string);
+    }
+    {// This behavior was not intended but it is convenient to tests char against wchar (on the ascii range)
+        std::string string("string_hash1");
+        std::string result;
+        constexpr auto string_hash1 = System::StringSwitch::Hash(L"string_hash1");
+        constexpr auto string_hash2 = System::StringSwitch::Hash(L"string_hash2");
+        constexpr auto string_hash3 = System::StringSwitch::Hash(L"string_hash3");
+        constexpr auto string_hash4 = System::StringSwitch::Hash(L"string_hash4");
+
+        switch (System::StringSwitch::Hash(string))
+        {
+            case string_hash1: result = "string_hash1"; break;
+            case string_hash2: result = "string_hash2"; break;
+            case string_hash3: result = "string_hash3"; break;
+            case string_hash4: result = "string_hash4"; break;
+        }
+
+        CHECK(result == string);
+
+        string = "é";
+        switch (System::StringSwitch::Hash(string))
+        {
+            case System::StringSwitch::Hash(L"é"): result = "string_hash1"; break;
+            case System::StringSwitch::Hash("é") : result = "string_hash2"; break;
+        }
+
+        CHECK(result == "string_hash2");
+
+        switch (System::StringSwitch::Hash(L"é"))
+        {
+            case System::StringSwitch::Hash(L"é"): result = "string_hash1"; break;
+            case System::StringSwitch::Hash("é") : result = "string_hash2"; break;
+        }
+
+        CHECK(result == "string_hash1");
+
+        string = u8"é";
+        switch (System::StringSwitch::Hash(string))
+        {
+            case System::StringSwitch::Hash(L"é"): result = "string_hash1"; break;
+            case System::StringSwitch::Hash(u8"é"): result = "string_hash2"; break;
+        }
+
+        CHECK(result == "string_hash2");
+    }
 }
 
 TEST_CASE("Base64", "[base64]")
