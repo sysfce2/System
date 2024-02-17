@@ -6,11 +6,48 @@
 #include <System/TypeName.hpp>
 #include <System/Encoding.hpp>
 #include <System/StringSwitch.hpp>
+#include <System/DotNet.hpp>
 
 #include <iostream>
 
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
+
+/*
+"get_hostfxr_path" // buffer, 1024, nullptr
+
+"hostfxr_initialize_for_runtime_config" // 
+typedef int32_t(HOSTFXR_CALLTYPE* hostfxr_initialize_for_runtime_config_fn)(
+    const char_t* runtime_config_path,
+    const struct hostfxr_initialize_parameters* parameters,
+    out hostfxr_handle* host_context_handle);
+
+"hostfxr_get_runtime_delegate" // 
+typedef int32_t(HOSTFXR_CALLTYPE* hostfxr_get_runtime_delegate_fn)(
+    const hostfxr_handle host_context_handle,
+    enum hostfxr_delegate_type type,
+    out void** delegate);
+
+"hostfxr_close" //
+typedef int32_t(HOSTFXR_CALLTYPE* hostfxr_close_fn)(const hostfxr_handle host_context_handle);
+
+hostfxr_handle ctx = nullptr;
+
+u32 result = hostfxr_initialize_for_runtime_config(path.c_str(), nullptr, &ctx);
+ON_SCOPE_EXIT{
+    hostfxr_close(ctx);
+};
+
+if (result > 2 || ctx == nullptr) {
+    throw std::runtime_error(hex::format("Failed to initialize command line {:X}", result));
+}
+
+result = hostfxr_get_runtime_delegate(
+    ctx,
+    hostfxr_delegate_type::hdt_load_assembly_and_get_function_pointer,
+    (void**)&loadAssemblyFunction
+);
+*/
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +61,24 @@ TEST_CASE("Environment variable manipulation", "[environment_variable]")
     CHECK(System::GetEnvVar("TestEnvVar") == "NewEnvVarValue");
     CHECK(System::UnsetEnvVar("TestEnvVar") == true);
     CHECK(System::GetEnvVar("TestEnvVar") == std::string());
+}
+
+TEST_CASE("Load .Net assembly", "[load_dotnet]")
+{
+    System::DotNet::DotNetCoreHost host;
+    host.LoadDotNetCoreHost();
+    auto entry_point = host.LoadAssemblyAndEntryPoint(
+        "TestDotNetLoader.Class1, TestDotNetLoader.Toto",
+        "CallMe",
+        "D:\\Programmes\\Projets\\Visual\\TestDotNetLoader\\bin\\Debug\\net6.0\\TestDotNetLoader.Toto.dll");
+
+    auto x = entry_point(nullptr, 0);
+
+    auto callMe2 = host.GetFunctionDelegate(
+        "TestDotNetLoader.Class1, TestDotNetLoader.Toto",
+        "CallMe2");
+
+    x = callMe2(nullptr, 0);
 }
 
 TEST_CASE("Set thread name", "[thread_name]")

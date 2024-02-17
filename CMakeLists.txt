@@ -34,15 +34,24 @@ set(SYSTEM_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/StringView.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/LoopBreak.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/TypeName.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/System/DotNet.hpp
 )
 
-add_library(system
+set(SYSTEM_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Filesystem.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Library.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Encoding.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/String.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/System_internals.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/DotNet.cpp
+  $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/src/WinRegister.h>
+  $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/src/WinRegister.cpp>
+)
+
+
+add_library(system
+  ${SYSTEM_SOURCES}
   ${SYSTEM_HEADERS}
 )
 
@@ -59,6 +68,7 @@ target_link_libraries(system
   $<$<BOOL:${UNIX}>:dl>
   
   $<$<BOOL:${WIN32}>:shell32>
+  $<$<BOOL:${WIN32}>:advapi32>
 )
 
 target_compile_options(system
