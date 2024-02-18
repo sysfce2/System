@@ -74,7 +74,7 @@ target_include_directories(system
   $<INSTALL_INTERFACE:include>
 )
 
-add_library(System::System ALIAS system)
+add_library(Nemirtingas::System ALIAS system)
 set_target_properties(system PROPERTIES EXPORT_NAME System)
 
 if(${BUILD_SYSTEMLIB_TESTS})
@@ -85,7 +85,7 @@ add_executable(test_app
 
 target_link_libraries(test_app
   PRIVATE
-  System::System
+  Nemirtingas::System
 )
 
 set_property(TARGET test_app PROPERTY
@@ -97,7 +97,7 @@ add_library(shared SHARED
 
 target_link_libraries(shared
   PRIVATE
-  System::System
+  Nemirtingas::System
 )
 
 set_target_properties(shared PROPERTIES PREFIX "")
@@ -123,7 +123,7 @@ install(FILES ${SYSTEM_HEADERS}
 install(
   EXPORT SystemTargets
   FILE SystemConfig.cmake
-  NAMESPACE System::
+  NAMESPACE Nemirtingas::
   DESTINATION lib/cmake/System
 )
 
