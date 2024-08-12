@@ -190,6 +190,7 @@ void* GetSymbol(void* handle, const char* symbol_name)
             std::string file_path;
             while ((dir_entry = readdir(dir)) != nullptr)
             {
+                bool found = false;
                 file_path = (self + dir_entry->d_name);
                 if (dir_entry->d_type != DT_LNK)
                 {// Not a link
@@ -198,19 +199,21 @@ void* GetSymbol(void* handle, const char* symbol_name)
 
                 file_path = System::ExpandSymlink(file_path);
 
-                auto pos = file_path.rfind('/');
-                if (pos != std::string::npos)
+                found = file_path == library_name;
+                if (!found)
                 {
-                    ++pos;
-                    if (strncmp(file_path.c_str() + pos, library_name, library_name_len) == 0)
-                    {
-                        res = dlopen(file_path.c_str(), RTLD_NOW);
-                        if (res != nullptr)
-                        {// Like Windows' GetModuleHandle, we don't want to increment the ref counter
-                            dlclose(res);
-                        }
-                        break;
+                    auto pos = file_path.rfind('/');
+                    if (pos != std::string::npos)
+                        found = strncmp(file_path.c_str() + pos + 1, library_name, library_name_len) == 0;
+                }
+                if (found)
+                {
+                    res = dlopen(file_path.c_str(), RTLD_NOW);
+                    if (res != nullptr)
+                    {// Like Windows' GetModuleHandle, we don't want to increment the ref counter
+                        dlclose(res);
                     }
+                    break;
                 }
             }
 
