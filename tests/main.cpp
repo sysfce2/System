@@ -10,8 +10,10 @@
 #include <System/SystemMacro.h>
 #include <System/SystemCompiler.h>
 #include <System/SystemCPUExtensions.h>
+#include <System/LoopBreak.hpp>
 
 #include <iostream>
+#include <fstream>
 #include <map>
 
 #define CATCH_CONFIG_RUNNER
@@ -23,9 +25,62 @@
 #define TEST_MACRO_4(a1, a2, a3, a4) TEST_MACRO_3(a1, a2, a3) + a4
 #define TEST_MACRO_5(a1, a2, a3, a4, a5) TEST_MACRO_4(a1, a2, a3, a4) + a5
 
+#ifdef CreateDirectory
+#undef CreateDirectory
+#endif
+
 int main(int argc, char *argv[])
 {
     return Catch::Session().run(argc, argv);
+}
+
+TEST_CASE("Filesystem", "[filesystem]")
+{
+    auto executableDir = System::Filesystem::Dirname(System::GetExecutablePath());
+
+    CHECK(System::Filesystem::Exists(executableDir));
+    CHECK(System::Filesystem::IsDir(executableDir));
+    CHECK(System::Filesystem::IsFile(System::GetExecutablePath()));
+
+    CHECK_FALSE(System::Filesystem::Exists(System::Filesystem::Join(executableDir, "dir_test", "subdir_test")));
+    CHECK_FALSE(System::Filesystem::CreateDirectory(System::Filesystem::Join(executableDir, "dir_test", "subdir_test"), false));
+    CHECK(System::Filesystem::CreateDirectory(System::Filesystem::Join(executableDir, "dir_test", "subdir_test"), true));
+    CHECK(System::Filesystem::Exists(System::Filesystem::Join(executableDir, "dir_test")));
+    CHECK(System::Filesystem::Exists(System::Filesystem::Join(executableDir, "dir_test", "subdir_test")));
+
+    CHECK_FALSE(System::Filesystem::Exists(System::Filesystem::Join(executableDir, "dir_test", "subdir_test", "file_test")));
+    std::ofstream(System::Filesystem::Join(executableDir, "dir_test", "subdir_test", "file_test"), std::ios::binary | std::ios::out | std::ios::trunc);
+
+    CHECK(System::Filesystem::Exists(System::Filesystem::Join(executableDir, "dir_test", "subdir_test", "file_test")));
+    CHECK(System::Filesystem::IsFile(System::Filesystem::Join(executableDir, "dir_test", "subdir_test", "file_test")));
+}
+
+TEST_CASE("Nested loop break", "[nested loop break]")
+{
+    int valueI = 0, valueJ = 0, valueK = 0;
+    for (int i = 0; i < 0xff; ++i) SYSTEM_LOOP_NAME(VALUE_I)
+    {
+        ++valueI;
+        for (int j = 0; j < 5; ++j) SYSTEM_LOOP_NAME(VALUE_J)
+        {
+            for (int k = 0; k < 16; ++k)
+            {
+                if (k > 0x8)
+                    SYSTEM_LOOP_CONTINUE(VALUE_I);
+
+                if (i > 3)
+                    SYSTEM_LOOP_BREAK(VALUE_I);
+
+                ++valueK;
+            }
+
+            ++valueJ;
+        }
+    }
+
+    CHECK(valueK == 36);
+    CHECK(valueJ == 0);
+    CHECK(valueI == 5);
 }
 
 TEST_CASE("CpuId", "[cpuid]")
@@ -34,13 +89,13 @@ TEST_CASE("CpuId", "[cpuid]")
     char cpuName[13]{};
 
     System::CpuFeatures::CpuId_t cpuId0 = System::CpuFeatures::CpuId(0);
-    *(int32_t*)&(cpuName[0]) = cpuId0.ebx;
-    *(int32_t*)&(cpuName[4]) = cpuId0.edx;
-    *(int32_t*)&(cpuName[8]) = cpuId0.ecx;
+    *(int32_t*)&(cpuName[0]) = cpuId0.Registers.ebx;
+    *(int32_t*)&(cpuName[4]) = cpuId0.Registers.edx;
+    *(int32_t*)&(cpuName[8]) = cpuId0.Registers.ecx;
 
     std::cout << "CPU ID             : " << cpuName << std::endl;
 #define CHECK_CPU_FEATURE(CPUID, FEATURE) printf("%-19s: %s\n", #FEATURE, System::CpuFeatures::HasFeature(CPUID, System::CpuFeatures:: FEATURE) ? "YES":"NO")
-    if (cpuId0.eax >= 1)
+    if (cpuId0.Registers.eax >= 1)
     {
         System::CpuFeatures::CpuId_t cpuId1 = System::CpuFeatures::CpuId(1);
         CHECK_CPU_FEATURE(cpuId1, FPU);
@@ -108,7 +163,7 @@ TEST_CASE("CpuId", "[cpuid]")
         //CHECK_CPU_FEATURE(cpuId1, INDEX_1_ECX_31);
     }
 
-    if (cpuId0.eax >= 7)
+    if (cpuId0.Registers.eax >= 7)
     {
         System::CpuFeatures::CpuId_t cpuId7 = System::CpuFeatures::CpuId(7);
 
@@ -487,7 +542,7 @@ TEST_CASE("Type name", "[TypeName]")
         TypeNameTestClass  test1, *pointerTest1 = &test1, **pointerTest11 = &pointerTest1, ***pointerTest111 = &pointerTest11;
         TypeNameTestStruct test2, *pointerTest2 = &test2, **pointerTest22 = &pointerTest2, ***pointerTest222 = &pointerTest22;
 
-#if defined(SYSTEM_OS_APPLE)
+#if defined(SYSTEM_COMPILER_CLANG)
         CHECK(System::TypeName::TypeName<TypeNameTestClass>().to_string() == "TypeNameTestClass");
         CHECK(System::TypeName::TypeName<TypeNameTestClass*>().to_string() == "TypeNameTestClass *");
         CHECK(System::TypeName::TypeName<TypeNameTestClass**>().to_string() == "TypeNameTestClass **");
@@ -506,7 +561,7 @@ TEST_CASE("Type name", "[TypeName]")
         CHECK(System::TypeName::BaseTypeName(pointerTest11).to_string() == "TypeNameTestClass");
         CHECK(System::TypeName::BaseTypeName(pointerTest111).to_string() == "TypeNameTestClass");
 
-#if defined(SYSTEM_OS_APPLE)
+#if defined(SYSTEM_COMPILER_CLANG)
         CHECK(System::TypeName::TypeName<TypeNameTestStruct>().to_string() == "TypeNameTestStruct");
         CHECK(System::TypeName::TypeName<TypeNameTestStruct*>().to_string() == "TypeNameTestStruct *");
         CHECK(System::TypeName::TypeName<TypeNameTestStruct**>().to_string() == "TypeNameTestStruct **");
