@@ -78,7 +78,7 @@ namespace System {
         x86 = 0,
         x64 = 1,
 		arm = 2,
-		aarch64 = 3,
+		arm64 = 3,
     };
 
     static constexpr OperatingSystem os =
@@ -98,7 +98,7 @@ namespace System {
 #elif defined(SYSTEM_ARCH_ARM)
 	Arch::arm;
 #elif defined(SYSTEM_ARCH_ARM64)
-    Arch::aarch64;
+    Arch::arm64;
 #endif
 
 }
