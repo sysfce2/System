@@ -27,7 +27,7 @@
 #include <mutex>
 #include <thread>
 #include <type_traits>
-#include <vector>
+#include <queue>
 #include <chrono>
 #include <list>
 #include <string>
@@ -37,19 +37,7 @@
 namespace System {
 class ThreadPool
 {
-    struct task_t
-    {
-        task_t() = default;
-
-        task_t(std::function<void()> proc, std::chrono::steady_clock::time_point start_time) noexcept:
-            proc(proc), start_time(start_time)
-        {}
-
-        task_t(task_t&& other) noexcept = default;
-
-        std::function<void()> proc;
-        std::chrono::steady_clock::time_point start_time;
-    };
+    using task_t = std::function<void()>;
 
     std::atomic<bool> _StopWorkers;
     std::atomic<std::size_t> _ActiveCount;
@@ -58,7 +46,7 @@ class ThreadPool
     std::mutex _Mutex;
 
     std::vector<std::thread> _Workers;
-    std::list<task_t> _Tasks;
+    std::queue<task_t> _Tasks;
 
 public:
     explicit ThreadPool():
@@ -78,9 +66,9 @@ public:
     ThreadPool&operator=(ThreadPool&&) = default;
 
     template <class Func, class... Args>
-    auto PushDelay(std::chrono::steady_clock::time_point start_time, Func &&fn, Args &&...args)
+    auto Push(Func&& fn, Args &&...args)
     {
-        using return_type = typename std::result_of<Func(Args...)>::type;
+        using return_type = decltype(fn(args...));
 
         auto task{ std::make_shared<std::packaged_task<return_type()>>(
             std::bind(std::forward<Func>(fn), std::forward<Args>(args)...)
@@ -90,24 +78,18 @@ public:
         {
             std::lock_guard<std::mutex> lock(_Mutex);
 
-            _Tasks.emplace_back([task]() { (*task)(); }, start_time);
+            _Tasks.emplace([task]() { (*task)(); });
         }
-        
+
         _WorkerNotifier.notify_one();
         return future;
-    }
-
-    template <class Func, class... Args>
-    auto Push(Func&& fn, Args &&...args)
-    {
-        return PushDelay(std::chrono::steady_clock::now(), std::forward<Func>(fn), std::forward<Args>(args)...);
     }
 
     // Remove all pending tasks from the queue
     void Clear()
     {
         std::lock_guard<std::mutex> lock(_Mutex);
-        _Tasks.clear();
+        _Tasks = {};
     }
 
     // Stops all previous and creates new worker threads.
@@ -156,10 +138,10 @@ private:
         {
             auto task{ _NextTask() };
 
-            if (task.proc)
+            if (task)
             {
                 ++_ActiveCount;
-                task.proc();
+                task();
                 --_ActiveCount;
             }
             else if (_StopWorkers)
@@ -169,7 +151,7 @@ private:
         }
     }
 
-    task_t _NextTask()
+    std::function<void()> _NextTask()
     {
         std::unique_lock<std::mutex> lock{ _Mutex };
 
@@ -178,18 +160,9 @@ private:
         if (_Tasks.empty())
             return {};
 
-        auto now = std::chrono::steady_clock::now();
-        for (auto it = _Tasks.begin(); it != _Tasks.end(); ++it)
-        {
-            if (it->start_time < now)
-            {
-                auto task{ std::move(*it) };
-                _Tasks.erase(it);
-                return task;
-            }
-        }
-
-        return {};
+        auto task{ _Tasks.front() };
+        _Tasks.pop();
+        return task;
     }
 };
 }
