@@ -14,8 +14,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(BUILD_SYSTEMLIB_TESTS "Build tests." OFF)
-option(BUILD_SYSTEMLIB_TESTS_DOTNET "Build tests dotnet." OFF)
+option(SYSTEM_DYNAMIC_RUNTIME "Link against dynamic runtime (Windows)" ON)
+option(SYSTEM_BUILD_TESTS "Build tests." OFF)
+option(SYSTEM_BUILD_TESTS_DOTNET "Build tests dotnet." OFF)
 
 set(SYSTEM_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/System/System.h
@@ -59,7 +60,7 @@ add_library(system
 )
 
 set_target_properties(system PROPERTIES
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:SYSTEM_DYNAMIC_RUNTIME>:DLL>"
   POSITION_INDEPENDENT_CODE ON
   C_VISIBILITY_PRESET hidden
   CXX_VISIBILITY_PRESET hidden
@@ -90,7 +91,7 @@ target_include_directories(system
 add_library(Nemirtingas::System ALIAS system)
 set_target_properties(system PROPERTIES EXPORT_NAME System)
 
-if(${BUILD_SYSTEMLIB_TESTS})
+if(${SYSTEM_BUILD_TESTS})
   
 add_executable(test_app
   tests/main.cpp
@@ -103,11 +104,11 @@ target_link_libraries(test_app
 
 target_compile_definitions(test_app
   PRIVATE
-  $<$<BOOL:${BUILD_SYSTEMLIB_TESTS_DOTNET}>:SYSTEM_DOTNET_TEST_ASSEMBLY="${CMAKE_CURRENT_SOURCE_DIR}/tests/TestDotNetLoader/bin/Release/net6.0/publish/TestDotNetLoader.dll">
+  $<$<BOOL:${SYSTEM_BUILD_TESTS_DOTNET}>:SYSTEM_DOTNET_TEST_ASSEMBLY="${CMAKE_CURRENT_SOURCE_DIR}/tests/TestDotNetLoader/bin/Release/net6.0/publish/TestDotNetLoader.dll">
 )
 
 set_property(TARGET test_app PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:SYSTEM_DYNAMIC_RUNTIME>:DLL>")
   
 add_library(shared SHARED
   tests/shared_main.cpp
@@ -121,7 +122,7 @@ target_link_libraries(shared
 set_target_properties(shared PROPERTIES PREFIX "")
 
 set_property(TARGET shared PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:SYSTEM_DYNAMIC_RUNTIME>:DLL>")
   
 endif()
 
