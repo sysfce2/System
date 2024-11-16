@@ -59,7 +59,7 @@ add_library(system
 )
 
 set_target_properties(system PROPERTIES
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:SYSTEM_DYNAMIC_RUNTIME>:DLL>"
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:${SYSTEM_DYNAMIC_RUNTIME}>:DLL>"
   POSITION_INDEPENDENT_CODE ON
   C_VISIBILITY_PRESET hidden
   CXX_VISIBILITY_PRESET hidden
@@ -107,7 +107,7 @@ target_compile_definitions(test_app
 )
 
 set_property(TARGET test_app PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:SYSTEM_DYNAMIC_RUNTIME>:DLL>")
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:${SYSTEM_DYNAMIC_RUNTIME}>:DLL>")
   
 add_library(shared SHARED
   tests/shared_main.cpp
@@ -121,7 +121,7 @@ target_link_libraries(shared
 set_target_properties(shared PROPERTIES PREFIX "")
 
 set_property(TARGET shared PROPERTY
-  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:SYSTEM_DYNAMIC_RUNTIME>:DLL>")
+  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<BOOL:${SYSTEM_DYNAMIC_RUNTIME}>:DLL>")
   
 endif()
 
