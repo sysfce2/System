@@ -8,6 +8,7 @@
 void shared_library_load()
 {
     std::cout << "From library: " << std::endl
+              << "  Parent pid             : " << System::GetParentProcessId() << std::endl
               << "  Executable pid         : " << System::GetProcessId() << std::endl
               << "  Library executable path: " << System::GetExecutablePath() << std::endl
               << "  Library module path    : " << System::GetModulePath() << std::endl << std::endl;

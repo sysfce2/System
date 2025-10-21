@@ -1,7 +1,7 @@
 
 cmake_policy(SET CMP0091 NEW)
-project(system)
 cmake_minimum_required(VERSION 3.15)
+project(system)
 
 if(APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -70,6 +70,7 @@ target_link_libraries(system
   PUBLIC
   $<$<BOOL:${UNIX}>:dl>
   
+  $<$<BOOL:${WIN32}>:ntdll>
   $<$<BOOL:${WIN32}>:shell32>
   $<$<BOOL:${WIN32}>:advapi32>
 )

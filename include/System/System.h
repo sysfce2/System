@@ -36,7 +36,8 @@ enum class TranslatedMode : uint8_t
 std::chrono::system_clock::time_point GetBootTime();
 std::chrono::microseconds GetUpTime();
 
-uint64_t GetProcessId();
+int32_t GetParentProcessId();
+int32_t GetProcessId();
 // Get the current process argv
 std::vector<std::string> GetProcArgs();
 // Get user env variable

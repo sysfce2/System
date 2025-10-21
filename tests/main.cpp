@@ -709,14 +709,15 @@ TEST_CASE("Load library", "[loadlibrary]")
 
     shared.OpenLibrary(lib_path, true);
     std::cout << "From executable: " << std::endl
-              << "  Executable pid        : " << System::GetProcessId() << std::endl
-              << "  Operating System      : " << System::os_name << std::endl
-              << "  System architecture   : " << System::arch_name << std::endl
-              << "  Compiler              : " << System::compiler_name << std::endl
-              << "  Translated mode       : " << System::GetTranslatedMode() << std::endl
-              << "  Executable path       : " << System::GetExecutablePath() << std::endl
-              << "  Executable module path: " << System::GetModulePath() << std::endl
-              << "  Library module path   : " << shared.GetLibraryPath() << std::endl << std::endl;
+              << "  Parent pid             : " << System::GetParentProcessId() << std::endl
+              << "  Executable pid         : " << System::GetProcessId() << std::endl
+              << "  Operating System       : " << System::os_name << std::endl
+              << "  System architecture    : " << System::arch_name << std::endl
+              << "  Compiler               : " << System::compiler_name << std::endl
+              << "  Translated mode        : " << System::GetTranslatedMode() << std::endl
+              << "  Executable path        : " << System::GetExecutablePath() << std::endl
+              << "  Executable module path : " << System::GetModulePath() << std::endl
+              << "  Library module path    : " << shared.GetLibraryPath() << std::endl << std::endl;
 
     {
         auto sharedLibraryFunction = shared.GetSymbol<std::shared_ptr<std::string>()>("GetExecutablePath");
