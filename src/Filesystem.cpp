@@ -316,7 +316,7 @@ bool CreateDirectory(std::string const& directory, bool recursive)
 bool DeleteFile(std::string const& path)
 {
     std::wstring wpath(System::Encoding::Utf8ToWChar(path));
-    return DeleteFileW(wpath.c_str()) == TRUE || GetLastError() == ERROR_FILE_NOT_FOUND;
+    return DeleteFileW(wpath.c_str()) == TRUE;
 }
 
 static std::vector<std::wstring> ListFiles(std::wstring const& path, bool files_only, bool recursive)
