@@ -23,44 +23,44 @@
 #include <string_view>
 #include <cstdint>
 
-namespace System {
-namespace Encoding {
+namespace System
+{
+namespace Encoding
+{
 
-std::wstring Utf8ToWChar(std::string const& str);
+std::wstring Utf8ToWChar(std::string const &str);
 
 std::wstring Utf8ToWChar(std::string_view str);
 
-std::u16string Utf8ToUtf16(std::string const& str);
+std::u16string Utf8ToUtf16(std::string const &str);
 
 std::u16string Utf8ToUtf16(std::string_view str);
 
-std::u32string Utf8ToUtf32(std::string const& str);
+std::u32string Utf8ToUtf32(std::string const &str);
 
 std::u32string Utf8ToUtf32(std::string_view str);
 
-std::string WCharToUtf8(std::wstring const& str);
+std::string WCharToUtf8(std::wstring const &str);
 
 std::string WCharToUtf8(std::wstring_view str);
 
-std::string Utf16ToUtf8(std::u16string const& str);
+std::string Utf16ToUtf8(std::u16string const &str);
 
 std::string Utf16ToUtf8(std::u16string_view str);
 
-std::string Utf32ToUtf8(std::u32string const& str);
+std::string Utf32ToUtf8(std::u32string const &str);
 
 std::string Utf32ToUtf8(std::u32string_view str);
 
 // Size of UTF8 chars (not the size of the byte buffer).
-size_t EncodedLength(std::string const& str);
-
 size_t EncodedLength(std::string_view str);
 
 namespace Base64
 {
 
-std::size_t Encode(void* dest, void const* src, std::size_t len, bool padding);
+std::size_t Encode(void *dest, void const *src, std::size_t len, bool padding);
 
-std::pair<std::size_t, std::size_t> Decode(void* dest, char const* src, std::size_t len);
+std::pair<std::size_t, std::size_t> Decode(void *dest, char const *src, std::size_t len);
 
 inline std::size_t constexpr EncodedSize(std::size_t n)
 {
@@ -72,7 +72,7 @@ inline std::size_t constexpr DecodedSize(std::size_t n)
     return n * 3 / 4;
 }
 
-inline std::string Encode(std::uint8_t const* data, std::size_t len, bool padding)
+inline std::string Encode(std::uint8_t const *data, std::size_t len, bool padding)
 {
     std::string dest;
     dest.resize(EncodedSize(len));
@@ -80,12 +80,12 @@ inline std::string Encode(std::uint8_t const* data, std::size_t len, bool paddin
     return dest;
 }
 
-inline std::string Encode(std::string const& s, bool padding)
+inline std::string Encode(std::string_view s, bool padding)
 {
-    return Encode(reinterpret_cast <std::uint8_t const*>(s.data()), s.size(), padding);
+    return Encode(reinterpret_cast<std::uint8_t const *>(s.data()), s.size(), padding);
 }
 
-inline std::string Decode(std::string const& data)
+inline std::string Decode(std::string_view data)
 {
     std::string dest;
     dest.resize(DecodedSize(data.size()));
@@ -94,11 +94,11 @@ inline std::string Decode(std::string const& data)
     return dest;
 }
 
-std::size_t UrlEncode(void* dest, void const* src, std::size_t len, bool padding);
+std::size_t UrlEncode(void *dest, void const *src, std::size_t len, bool padding);
 
-std::pair<std::size_t, std::size_t> UrlDecode(void* dest, char const* src, std::size_t len);
+std::pair<std::size_t, std::size_t> UrlDecode(void *dest, char const *src, std::size_t len);
 
-inline std::string UrlEncode(std::uint8_t const* data, std::size_t len, bool padding)
+inline std::string UrlEncode(std::uint8_t const *data, std::size_t len, bool padding)
 {
     std::string dest;
     dest.resize(EncodedSize(len));
@@ -106,12 +106,12 @@ inline std::string UrlEncode(std::uint8_t const* data, std::size_t len, bool pad
     return dest;
 }
 
-inline std::string UrlEncode(std::string const& s, bool padding)
+inline std::string UrlEncode(std::string_view s, bool padding)
 {
-    return UrlEncode(reinterpret_cast <std::uint8_t const*>(s.data()), s.size(), padding);
+    return UrlEncode(reinterpret_cast<std::uint8_t const *>(s.data()), s.size(), padding);
 }
 
-inline std::string UrlDecode(std::string const& data)
+inline std::string UrlDecode(std::string_view data)
 {
     std::string dest;
     dest.resize(DecodedSize(data.size()));
@@ -120,7 +120,7 @@ inline std::string UrlDecode(std::string const& data)
     return dest;
 }
 
-}
+} // namespace Base64
 
-}
-}
+} // namespace Encoding
+} // namespace System
