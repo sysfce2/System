@@ -304,5 +304,22 @@ inline std::vector<std::string> SplitString(std::string const& str, char delimit
     return result;
 }
 
+inline std::vector<std::string_view> SplitString(std::string_view str, char delimiter)
+{
+    std::vector<std::string_view> result;
+    size_t pos = 0;
+    size_t oldPos = 0;
+
+    while ((pos = str.find(delimiter, oldPos)) != std::string_view::npos)
+    {
+        result.emplace_back(str.substr(oldPos, pos - oldPos));
+        oldPos = ++pos;
+    }
+
+    result.emplace_back(str.substr(oldPos));
+
+    return result;
+}
+
 }
 }
