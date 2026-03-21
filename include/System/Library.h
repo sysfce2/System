@@ -21,72 +21,71 @@
 
 #include <string>
 
-namespace System {
+namespace System
+{
 
-namespace Library {
+namespace Library
+{
 
 class Library
 {
-    class LibraryImpl* _Impl;
+    class LibraryImpl *_Impl;
 
-public:
+  public:
     Library();
 
-    Library(Library const& other);
+    Library(Library const &other);
 
-    Library(Library&& other) noexcept;
+    Library(Library &&other) noexcept;
 
-    Library& operator=(Library const& other);
+    Library &operator=(Library const &other);
 
-    Library& operator=(Library&& other) noexcept;
+    Library &operator=(Library &&other) noexcept;
 
     ~Library();
 
-    bool OpenLibrary(std::string const& library_name, bool append_extension);
+    bool OpenLibrary(std::string const &library_name, bool append_extension);
 
     void CloseLibrary();
 
-    void* GetVSymbol(std::string const& symbol_name) const;
+    void *GetVSymbol(std::string const &symbol_name) const;
 
-    template<typename T>
-    inline T* GetSymbol(std::string const& symbol_name) const
-    {
-        return reinterpret_cast<T*>(GetVSymbol(symbol_name));
-    }
+    template <typename T> inline T *GetSymbol(std::string const &symbol_name) const { return reinterpret_cast<T *>(GetVSymbol(symbol_name)); }
 
     std::string GetLibraryPath() const;
 
-    void* GetLibraryNativeHandle() const;
+    void *GetLibraryNativeHandle() const;
 
     bool IsLoaded() const;
 };
 
 enum class LoadLibraryReason
 {
-    Loaded = 0,
+    Loaded   = 0,
     Unloaded = 1,
 };
 
-typedef void(*LoadLibraryCallback_t)(std::string const& libraryName, void* libraryBase, System::Library::LoadLibraryReason reason, void* userParameter);
-
+typedef void (*LoadLibraryCallback_t)(std::string const &libraryName, void *libraryBase, System::Library::LoadLibraryReason reason, void *userParameter);
 
 // Triies to load the library, I suggest that you use a Library instance instead
-void* OpenLibrary(const char* library_name);
+void *OpenLibrary(const char *library_name);
 // Will decrease the OS' ref counter on the library, use it to close a handle opened by open_library.
 // A Library instance will automatically call this in the destructor
-void  CloseLibrary(void* handle);
+void CloseLibrary(void *handle);
 // Will try to retrieve a symbol address from the library handle
-void* GetSymbol(void* handle, const char* symbol_name);
+void *GetSymbol(void *handle, const char *symbol_name);
 // Get a pointer to the library, if it is not loaded, will return nullptr. This doesn't increment the OS' internal ref counter
-void* GetLibraryHandle(const char* library_name);
+void *GetLibraryHandle(const char *library_name);
+// Get a pointer to the library that owns this address
+void *GetLibraryHandleFromAddress(const void *address);
 // Get the library path of a module handle
-std::string GetLibraryPath(void* handle);
+std::string GetLibraryPath(void *handle);
 // Get the native extension representing a shared library.
 std::string GetLibraryExtension();
 // Add a callback on library load
-void* AddLoadLibraryCallback(LoadLibraryCallback_t callback, void* userParameter);
+void *AddLoadLibraryCallback(LoadLibraryCallback_t callback, void *userParameter);
 // Remove a callback from a previous call of AddLoadLibraryCallback
-void RemoveLoadLibraryCallback(void* token);
-}
+void RemoveLoadLibraryCallback(void *token);
+} // namespace Library
 
-}
+} // namespace System

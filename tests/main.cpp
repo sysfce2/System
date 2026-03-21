@@ -35,19 +35,19 @@
 #define TEST_MACRO_5(a1, a2, a3, a4, a5) TEST_MACRO_4(a1, a2, a3, a4) + a5
 
 #ifdef CreateDirectory
-#undef CreateDirectory
+    #undef CreateDirectory
 #endif
 
 /*
 "get_hostfxr_path" // buffer, 1024, nullptr
 
-"hostfxr_initialize_for_runtime_config" // 
+"hostfxr_initialize_for_runtime_config" //
 typedef int32_t(HOSTFXR_CALLTYPE* hostfxr_initialize_for_runtime_config_fn)(
     const char_t* runtime_config_path,
     const struct hostfxr_initialize_parameters* parameters,
     out hostfxr_handle* host_context_handle);
 
-"hostfxr_get_runtime_delegate" // 
+"hostfxr_get_runtime_delegate" //
 typedef int32_t(HOSTFXR_CALLTYPE* hostfxr_get_runtime_delegate_fn)(
     const hostfxr_handle host_context_handle,
     enum hostfxr_delegate_type type,
@@ -84,11 +84,11 @@ TEST_CASE("ISO8601 date parse, [date_parse]")
     auto clock = System::Date::ParseIso8601("2026-01-31T12:34:56.789123Z");
 
     auto now_us = std::chrono::time_point_cast<std::chrono::microseconds>(clock);
-    auto secs = std::chrono::time_point_cast<std::chrono::seconds>(clock);
-    auto us = std::chrono::duration_cast<std::chrono::microseconds>(now_us - secs).count();
+    auto secs   = std::chrono::time_point_cast<std::chrono::seconds>(clock);
+    auto us     = std::chrono::duration_cast<std::chrono::microseconds>(now_us - secs).count();
 
     std::time_t t = std::chrono::system_clock::to_time_t(secs);
-    std::tm tm = *std::gmtime(&t);
+    std::tm tm    = *std::gmtime(&t);
 
     CHECK(tm.tm_year == 126);
     CHECK(tm.tm_mon == 0);
@@ -101,23 +101,19 @@ TEST_CASE("ISO8601 date parse, [date_parse]")
 
 TEST_CASE("Clock to ISO8601 date, [date_clock]")
 {
-    auto now = std::chrono::system_clock::now();
+    auto now    = std::chrono::system_clock::now();
     auto now_us = std::chrono::time_point_cast<std::chrono::microseconds>(now);
-    auto secs = std::chrono::time_point_cast<std::chrono::seconds>(now);
-    auto us = std::chrono::duration_cast<std::chrono::microseconds>(now_us - secs).count();
+    auto secs   = std::chrono::time_point_cast<std::chrono::seconds>(now);
+    auto us     = std::chrono::duration_cast<std::chrono::microseconds>(now_us - secs).count();
 
     std::time_t t = std::chrono::system_clock::to_time_t(secs);
-    std::tm tm = *std::gmtime(&t);
+    std::tm tm    = *std::gmtime(&t);
 
     auto dateString = System::Date::ClockIso8601(now, false);
     std::stringstream sstr;
-    sstr << 
-        std::to_string(tm.tm_year + 1900) << "-" <<
-        std::setw(2) << std::setfill('0') << std::to_string(tm.tm_mon + 1) << "-" <<
-        std::setw(2) << std::setfill('0') << std::to_string(tm.tm_mday) << "T" <<
-        std::setw(2) << std::setfill('0') << std::to_string(tm.tm_hour) << ":" <<
-        std::setw(2) << std::setfill('0') << std::to_string(tm.tm_min) << ":" <<
-        std::setw(2) << std::setfill('0') << std::to_string(tm.tm_sec);
+    sstr << std::to_string(tm.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << std::to_string(tm.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0')
+         << std::to_string(tm.tm_mday) << "T" << std::setw(2) << std::setfill('0') << std::to_string(tm.tm_hour) << ":" << std::setw(2) << std::setfill('0')
+         << std::to_string(tm.tm_min) << ":" << std::setw(2) << std::setfill('0') << std::to_string(tm.tm_sec);
 
     CHECK(dateString == (sstr.str() + "Z"));
     dateString = System::Date::ClockIso8601(now, true);
@@ -126,12 +122,9 @@ TEST_CASE("Clock to ISO8601 date, [date_clock]")
     CHECK(dateString == sstr.str());
 }
 
-auto globalNamespaceLambda = []() {
-    std::cout << SYSTEM_DETAILS_FUNCTION_NAME << " | " << SYSTEM_FUNCTION_NAME << std::endl;
-};
+auto globalNamespaceLambda = []() { std::cout << SYSTEM_DETAILS_FUNCTION_NAME << " | " << SYSTEM_FUNCTION_NAME << std::endl; };
 
-template<typename T>
-static inline std::weak_ptr<T> make_weak(std::shared_ptr<T> v)
+template <typename T> static inline std::weak_ptr<T> make_weak(std::shared_ptr<T> v)
 {
     return v;
 }
@@ -140,14 +133,14 @@ class ClangOperatorWithoutSpace
 {
     struct InternalStruct_t
     {
-
     };
 
-public:
-    void _DoSomething(std::shared_ptr<InternalStruct_t> a1, uint64_t const& a2, std::string const& a3)
+  public:
+    void _DoSomething(std::shared_ptr<InternalStruct_t> a1, uint64_t const &a2, std::string const &a3)
     {
-        [this, aa1 = make_weak(a1)](const std::variant<std::vector<uint8_t>, std::string>& message) {
-            CHECK(SYSTEM_FUNCTION_NAME == std::string{ "ClangOperatorWithoutSpace::_DoSomething" });
+        [this, aa1 = make_weak(a1)](const std::variant<std::vector<uint8_t>, std::string> &message)
+        {
+            CHECK(SYSTEM_FUNCTION_NAME == std::string{"ClangOperatorWithoutSpace::_DoSomething"});
             std::cout << SYSTEM_DETAILS_FUNCTION_NAME << " | " << SYSTEM_FUNCTION_NAME << std::endl;
         }("");
     }
@@ -157,29 +150,31 @@ struct FunctionNameStructTest
 {
     int Name1(int, int)
     {
-        CHECK(SYSTEM_FUNCTION_NAME == std::string{ "FunctionNameStructTest::Name1" });
+        CHECK(SYSTEM_FUNCTION_NAME == std::string{"FunctionNameStructTest::Name1"});
         std::cout << SYSTEM_DETAILS_FUNCTION_NAME << " | " << SYSTEM_FUNCTION_NAME << std::endl;
         return 0;
     }
 
-    template<typename T, typename U, typename V>
-    V Name2(T, U)
+    template <typename T, typename U, typename V> V Name2(T, U)
     {
-        CHECK(SYSTEM_FUNCTION_NAME == std::string_view{ "FunctionNameStructTest::Name2" });
+        CHECK(SYSTEM_FUNCTION_NAME == std::string_view{"FunctionNameStructTest::Name2"});
         std::cout << SYSTEM_DETAILS_FUNCTION_NAME << " | " << SYSTEM_FUNCTION_NAME << std::endl;
         return {};
     }
 
     void Lambda1()
     {
-        [this]() {
-            CHECK(SYSTEM_FUNCTION_NAME == std::string_view{ "FunctionNameStructTest::Lambda1" });
+        [this]()
+        {
+            CHECK(SYSTEM_FUNCTION_NAME == std::string_view{"FunctionNameStructTest::Lambda1"});
             std::cout << SYSTEM_DETAILS_FUNCTION_NAME << " | " << SYSTEM_FUNCTION_NAME << std::endl;
         }();
 
-        []() {
-            []() {
-                CHECK(SYSTEM_FUNCTION_NAME == std::string_view{ "FunctionNameStructTest::Lambda1" });
+        []()
+        {
+            []()
+            {
+                CHECK(SYSTEM_FUNCTION_NAME == std::string_view{"FunctionNameStructTest::Lambda1"});
                 std::cout << SYSTEM_DETAILS_FUNCTION_NAME << " | " << SYSTEM_FUNCTION_NAME << std::endl;
             }();
         }();
@@ -223,25 +218,27 @@ TEST_CASE("Filesystem", "[filesystem]")
 TEST_CASE("Nested loop break", "[nested loop break]")
 {
     int valueI = 0, valueJ = 0, valueK = 0;
-    for (int i = 0; i < 0xff; ++i) SYSTEM_LOOP_NAME(VALUE_I)
-    {
-        ++valueI;
-        for (int j = 0; j < 5; ++j) SYSTEM_LOOP_NAME(VALUE_J)
+    for (int i = 0; i < 0xff; ++i)
+        SYSTEM_LOOP_NAME(VALUE_I)
         {
-            for (int k = 0; k < 16; ++k)
-            {
-                if (k > 0x8)
-                    SYSTEM_LOOP_CONTINUE(VALUE_I);
+            ++valueI;
+            for (int j = 0; j < 5; ++j)
+                SYSTEM_LOOP_NAME(VALUE_J)
+                {
+                    for (int k = 0; k < 16; ++k)
+                    {
+                        if (k > 0x8)
+                            SYSTEM_LOOP_CONTINUE(VALUE_I);
 
-                if (i > 3)
-                    SYSTEM_LOOP_BREAK(VALUE_I);
+                        if (i > 3)
+                            SYSTEM_LOOP_BREAK(VALUE_I);
 
-                ++valueK;
-            }
+                        ++valueK;
+                    }
 
-            ++valueJ;
+                    ++valueJ;
+                }
         }
-    }
 
     CHECK(valueK == 36);
     CHECK(valueJ == 0);
@@ -254,12 +251,12 @@ TEST_CASE("CpuId", "[cpuid]")
     char cpuName[13]{};
 
     System::CpuFeatures::CpuId_t cpuId0 = System::CpuFeatures::CpuId(0);
-    *(int32_t*)&(cpuName[0]) = cpuId0.Registers.ebx;
-    *(int32_t*)&(cpuName[4]) = cpuId0.Registers.edx;
-    *(int32_t*)&(cpuName[8]) = cpuId0.Registers.ecx;
+    *(int32_t *)&(cpuName[0])           = cpuId0.Registers.ebx;
+    *(int32_t *)&(cpuName[4])           = cpuId0.Registers.edx;
+    *(int32_t *)&(cpuName[8])           = cpuId0.Registers.ecx;
 
     std::cout << "CPU ID             : " << cpuName << std::endl;
-#define CHECK_CPU_FEATURE(CPUID, FEATURE) printf("%-19s: %s\n", #FEATURE, System::CpuFeatures::HasFeature(CPUID, System::CpuFeatures:: FEATURE) ? "YES":"NO")
+    #define CHECK_CPU_FEATURE(CPUID, FEATURE) printf("%-19s: %s\n", #FEATURE, System::CpuFeatures::HasFeature(CPUID, System::CpuFeatures::FEATURE) ? "YES" : "NO")
     if (cpuId0.Registers.eax >= 1)
     {
         System::CpuFeatures::CpuId_t cpuId1 = System::CpuFeatures::CpuId(1);
@@ -273,7 +270,7 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId1, MCE);
         CHECK_CPU_FEATURE(cpuId1, CX8);
         CHECK_CPU_FEATURE(cpuId1, APIC);
-        //CHECK_CPU_FEATURE(cpuId1, INDEX_1_EDX_10);
+        // CHECK_CPU_FEATURE(cpuId1, INDEX_1_EDX_10);
         CHECK_CPU_FEATURE(cpuId1, SEP);
         CHECK_CPU_FEATURE(cpuId1, MTRR);
         CHECK_CPU_FEATURE(cpuId1, PGE);
@@ -283,7 +280,7 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId1, PSE36);
         CHECK_CPU_FEATURE(cpuId1, PSN);
         CHECK_CPU_FEATURE(cpuId1, CLFSH);
-        //CHECK_CPU_FEATURE(cpuId1, INDEX_1_EDX_20);
+        // CHECK_CPU_FEATURE(cpuId1, INDEX_1_EDX_20);
         CHECK_CPU_FEATURE(cpuId1, DS);
         CHECK_CPU_FEATURE(cpuId1, ACPI);
         CHECK_CPU_FEATURE(cpuId1, MMX);
@@ -293,7 +290,7 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId1, SS);
         CHECK_CPU_FEATURE(cpuId1, HTT);
         CHECK_CPU_FEATURE(cpuId1, TM);
-        //CHECK_CPU_FEATURE(cpuId1, INDEX_1_EDX_30);
+        // CHECK_CPU_FEATURE(cpuId1, INDEX_1_EDX_30);
         CHECK_CPU_FEATURE(cpuId1, PBE);
         CHECK_CPU_FEATURE(cpuId1, SSE3);
         CHECK_CPU_FEATURE(cpuId1, PCLMULQDQ);
@@ -325,7 +322,7 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId1, AVX);
         CHECK_CPU_FEATURE(cpuId1, F16C);
         CHECK_CPU_FEATURE(cpuId1, RDRAND);
-        //CHECK_CPU_FEATURE(cpuId1, INDEX_1_ECX_31);
+        // CHECK_CPU_FEATURE(cpuId1, INDEX_1_ECX_31);
     }
 
     if (cpuId0.Registers.eax >= 7)
@@ -338,7 +335,7 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId7, BMI1);
         CHECK_CPU_FEATURE(cpuId7, HLE);
         CHECK_CPU_FEATURE(cpuId7, AVX2);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EBX_6);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EBX_6);
         CHECK_CPU_FEATURE(cpuId7, SMEP);
         CHECK_CPU_FEATURE(cpuId7, BMI2);
         CHECK_CPU_FEATURE(cpuId7, ERMS);
@@ -354,7 +351,7 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId7, ADX);
         CHECK_CPU_FEATURE(cpuId7, SMAP);
         CHECK_CPU_FEATURE(cpuId7, AVX512_IFMA);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EBX_22);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EBX_22);
         CHECK_CPU_FEATURE(cpuId7, CLFLUSHOPT);
         CHECK_CPU_FEATURE(cpuId7, CLWB);
         CHECK_CPU_FEATURE(cpuId7, TRACE);
@@ -377,42 +374,42 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId7, VPCLMULQDQ);
         CHECK_CPU_FEATURE(cpuId7, AVX512_VNNI);
         CHECK_CPU_FEATURE(cpuId7, AVX512_BITALG);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_13);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_13);
         CHECK_CPU_FEATURE(cpuId7, AVX512_VPOPCNTDQ);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_15);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_16);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_15);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_16);
         CHECK_CPU_FEATURE(cpuId7, RDPID);
         CHECK_CPU_FEATURE(cpuId7, KL);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_24);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_24);
         CHECK_CPU_FEATURE(cpuId7, CLDEMOTE);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_26);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_ECX_26);
         CHECK_CPU_FEATURE(cpuId7, MOVDIRI);
         CHECK_CPU_FEATURE(cpuId7, MOVDIR64B);
         CHECK_CPU_FEATURE(cpuId7, ENQCMD);
         CHECK_CPU_FEATURE(cpuId7, SGX_LC);
         CHECK_CPU_FEATURE(cpuId7, PKS);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_0);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_1);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_0);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_1);
         CHECK_CPU_FEATURE(cpuId7, AVX512_4VNNIW);
         CHECK_CPU_FEATURE(cpuId7, AVX512_4FMAPS);
         CHECK_CPU_FEATURE(cpuId7, FSRM);
         CHECK_CPU_FEATURE(cpuId7, UINTR);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_6);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_7);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_6);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_7);
         CHECK_CPU_FEATURE(cpuId7, AVX512_VP2INTERSECT);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_9);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_9);
         CHECK_CPU_FEATURE(cpuId7, MD_CLEAR);
         CHECK_CPU_FEATURE(cpuId7, RTM_ALWAYS_ABORT);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_12);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_13);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_12);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_13);
         CHECK_CPU_FEATURE(cpuId7, SERIALIZE);
         CHECK_CPU_FEATURE(cpuId7, HYBRID);
         CHECK_CPU_FEATURE(cpuId7, TSXLDTRK);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_17);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_17);
         CHECK_CPU_FEATURE(cpuId7, PCONFIG);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_19);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_19);
         CHECK_CPU_FEATURE(cpuId7, IBT);
-        //CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_21);
+        // CHECK_CPU_FEATURE(cpuId7, INDEX_7_EDX_21);
         CHECK_CPU_FEATURE(cpuId7, AMX_BF16);
         CHECK_CPU_FEATURE(cpuId7, AVX512_FP16);
         CHECK_CPU_FEATURE(cpuId7, AMX_TILE);
@@ -432,7 +429,7 @@ TEST_CASE("CpuId", "[cpuid]")
         CHECK_CPU_FEATURE(cpuId7, LAM);
     }
 
-#undef CHECK_CPU_FEATURE
+    #undef CHECK_CPU_FEATURE
 
 #elif defined(SYSTEM_ARCH_ARM64) || defined(SYSTEM_ARCH_ARM)
 
@@ -453,12 +450,18 @@ TEST_CASE("Guid", "[guid]")
 {
     System::GuidData nullGuidData = {};
     System::Guid nullGuid;
-    System::GuidData guid1Data {
+    System::GuidData guid1Data{
         0x33221100,
         0x5544,
         0x7766,
         0x8899,
-        0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, };
+        0xaa,
+        0xbb,
+        0xcc,
+        0xdd,
+        0xee,
+        0xff,
+    };
     System::Guid guid1("33221100-5544-7766-8899-AABBCCDDEEFF");
 
     CHECK(nullGuid.ToString() == "00000000-0000-0000-0000-000000000000");
@@ -481,11 +484,11 @@ TEST_CASE("Guid", "[guid]")
 
     guid1.Clear();
     CHECK(nullGuid == nullGuidData);
-    
+
     // Check operators
     {
-        System::GuidData smaller{ 0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a };
-        System::GuidData bigger{ 0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a };
+        System::GuidData smaller{0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a};
+        System::GuidData bigger{0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a};
 
         CHECK(smaller == smaller);
 
@@ -504,7 +507,7 @@ TEST_CASE("Guid", "[guid]")
         CHECK_FALSE(smaller > bigger);
         CHECK_FALSE(smaller >= bigger);
 
-        bigger.Dword = 1;
+        bigger.Dword  = 1;
         bigger.Short1 = 3;
         CHECK_FALSE(smaller == bigger);
         CHECK(smaller != bigger);
@@ -537,11 +540,11 @@ TEST_CASE("Guid", "[guid]")
 
     // Map can use Guid as key
     std::map<System::Guid, std::string> map;
-    map[System::GuidData{ 0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a }] = "1";
-    map[System::GuidData{ 0x00000002, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a }] = "2";
+    map[System::GuidData{0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a}] = "1";
+    map[System::GuidData{0x00000002, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a}] = "2";
 
-    CHECK(map[System::GuidData{ 0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a }] == "1");
-    CHECK(map[System::GuidData{ 0x00000002, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a }] == "2");
+    CHECK(map[System::GuidData{0x00000001, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a}] == "1");
+    CHECK(map[System::GuidData{0x00000002, 0x0002, 0x0003, 0x0004, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a}] == "2");
 }
 
 TEST_CASE("Environment variable manipulation", "[environment_variable]")
@@ -563,10 +566,7 @@ TEST_CASE("Load .Net assembly", "[load_dotnet]")
 
     System::DotNet::DotNetCoreHost host;
     host.LoadDotNetCoreHost();
-    auto entry_point = host.LoadAssemblyAndEntryPoint(
-        "TestDotNetLoader.EntryPoint, TestDotNetLoader",
-        "Main",
-        SYSTEM_DOTNET_TEST_ASSEMBLY);
+    auto entry_point = host.LoadAssemblyAndEntryPoint("TestDotNetLoader.EntryPoint, TestDotNetLoader", "Main", SYSTEM_DOTNET_TEST_ASSEMBLY);
 
     auto x = entry_point(nullptr, 0);
 
@@ -579,7 +579,7 @@ TEST_CASE("Load .Net assembly", "[load_dotnet]")
     CHECK(y->X == 50);
     y->X = 100;
 
-    auto freeTestClassFunction = host.GetFunctionDelegate<void(TestClass*, int)>(
+    auto freeTestClassFunction = host.GetFunctionDelegate<void(TestClass *, int)>(
         "TestDotNetLoader.Class1, TestDotNetLoader",
         "FreeTestClass",
         "TestDotNetLoader.Class1+FreeTestClassDelegate, TestDotNetLoader");
@@ -653,7 +653,7 @@ TEST_CASE("String switch", "[string_switch]")
 
         CHECK(result == string);
     }
-    {// This behavior was not intended but it is convenient to tests char against wchar (on the ascii range)
+    { // This behavior was not intended but it is convenient to tests char against wchar (on the ascii range)
         std::string string("string_hash1");
         std::string result;
         constexpr auto string_hash1 = System::StringSwitch::Hash(L"string_hash1");
@@ -675,7 +675,7 @@ TEST_CASE("String switch", "[string_switch]")
         switch (System::StringSwitch::Hash(string))
         {
             case System::StringSwitch::Hash(L"é"): result = "string_hash1"; break;
-            case System::StringSwitch::Hash("é") : result = "string_hash2"; break;
+            case System::StringSwitch::Hash("é"): result = "string_hash2"; break;
         }
 
         CHECK(result == "string_hash2");
@@ -683,7 +683,7 @@ TEST_CASE("String switch", "[string_switch]")
         switch (System::StringSwitch::Hash(L"é"))
         {
             case System::StringSwitch::Hash(L"é"): result = "string_hash1"; break;
-            case System::StringSwitch::Hash("é") : result = "string_hash2"; break;
+            case System::StringSwitch::Hash("é"): result = "string_hash2"; break;
         }
 
         CHECK(result == "string_hash1");
@@ -707,38 +707,38 @@ TEST_CASE("Base64", "[base64]")
     CHECK(System::Encoding::Base64::Decode("eyAianNvbl9rZXkiOiAianNvbl92YWx1ZSIgfQ==") == R"({ "json_key": "json_value" })");
     CHECK(System::Encoding::Base64::Decode("eyAianNvbl9rZXkiOiAianNvbl92YWx1ZSIgfQ") == R"({ "json_key": "json_value" })");
 
-    CHECK(System::Encoding::Base64::Encode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb"    , true ) == "+/v7+/v7+/v7");
-    CHECK(System::Encoding::Base64::Encode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb"    , false) == "+/v7+/v7+/v7");
-    CHECK(System::Encoding::Base64::Encode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", true ) == "+/v7+/v7+/v7+w==");
+    CHECK(System::Encoding::Base64::Encode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", true) == "+/v7+/v7+/v7");
+    CHECK(System::Encoding::Base64::Encode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", false) == "+/v7+/v7+/v7");
+    CHECK(System::Encoding::Base64::Encode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", true) == "+/v7+/v7+/v7+w==");
     CHECK(System::Encoding::Base64::Encode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", false) == "+/v7+/v7+/v7+w");
 
-    CHECK(System::Encoding::Base64::UrlEncode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb"    , true ) == "-_v7-_v7-_v7");
-    CHECK(System::Encoding::Base64::UrlEncode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb"    , false) == "-_v7-_v7-_v7");
-    CHECK(System::Encoding::Base64::UrlEncode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", true ) == "-_v7-_v7-_v7-w==");
+    CHECK(System::Encoding::Base64::UrlEncode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", true) == "-_v7-_v7-_v7");
+    CHECK(System::Encoding::Base64::UrlEncode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", false) == "-_v7-_v7-_v7");
+    CHECK(System::Encoding::Base64::UrlEncode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", true) == "-_v7-_v7-_v7-w==");
     CHECK(System::Encoding::Base64::UrlEncode("\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb", false) == "-_v7-_v7-_v7-w");
-     
-    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7")     == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
-    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7+w==") == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
-    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7+w")   == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
 
-    CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7")     == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
+    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7") == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
+    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7+w==") == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
+    CHECK(System::Encoding::Base64::Decode("+/v7+/v7+/v7+w") == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
+
+    CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7") == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
     CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7-w==") == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
-    CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7-w")   == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
+    CHECK(System::Encoding::Base64::UrlDecode("-_v7-_v7-_v7-w") == "\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb\xfb");
 }
 
-inline std::ostream& operator<<(std::ostream& os, System::TranslatedMode mode)
+inline std::ostream &operator<<(std::ostream &os, System::TranslatedMode mode)
 {
     switch (mode)
     {
         case System::TranslatedMode::Unavailable: return os << "Unavailable";
-        case System::TranslatedMode::Native     : return os << "Native";
-        case System::TranslatedMode::Translated : return os << "Translated";
+        case System::TranslatedMode::Native: return os << "Native";
+        case System::TranslatedMode::Translated: return os << "Translated";
     }
 
     return os << "System::TranslatedMode(" << (int)mode << ')';
 }
 
-static void LoadLibraryCallback(std::string const& libraryName, void* libraryBase, System::Library::LoadLibraryReason reason, void* userParameter)
+static void LoadLibraryCallback(std::string const &libraryName, void *libraryBase, System::Library::LoadLibraryReason reason, void *userParameter)
 {
 #if defined(SYSTEM_OS_WINDOWS)
     auto filename = System::Filesystem::Filename(libraryName);
@@ -769,7 +769,8 @@ TEST_CASE("Load library", "[loadlibrary]")
               << "  Translated mode        : " << System::GetTranslatedMode() << std::endl
               << "  Executable path        : " << System::GetExecutablePath() << std::endl
               << "  Executable module path : " << System::GetModulePath() << std::endl
-              << "  Library module path    : " << shared.GetLibraryPath() << std::endl << std::endl;
+              << "  Library module path    : " << shared.GetLibraryPath() << std::endl
+              << std::endl;
 
     {
         auto sharedLibraryFunction = shared.GetSymbol<std::shared_ptr<std::string>()>("GetExecutablePath");
@@ -779,6 +780,11 @@ TEST_CASE("Load library", "[loadlibrary]")
     {
         auto sharedLibraryFunction = shared.GetSymbol<std::shared_ptr<std::string>()>("GetModulePath");
         CHECK(shared.GetLibraryPath() == *sharedLibraryFunction());
+    }
+
+    {
+        auto sharedLibraryFunction = shared.GetSymbol<std::shared_ptr<std::string>()>("GetExecutablePath");
+        CHECK(shared.GetLibraryNativeHandle() == System::Library::GetLibraryHandleFromAddress((const void *)sharedLibraryFunction));
     }
 
 #if defined(SYSTEM_OS_WINDOWS)
@@ -840,7 +846,7 @@ TEST_CASE("Show modules", "[showmodules]")
 {
     std::cout << "Loaded modules: " << std::endl;
     auto modules = System::GetModules();
-    for (auto const& item : modules)
+    for (auto const &item : modules)
     {
         std::cout << "  " << item << std::endl;
     }
@@ -977,7 +983,7 @@ TEST_CASE("LeftTrim", "[left_trim]")
     }
     // copy std::string_view
     {
-        std::string r = System::String::CopyLeftTrim(std::string_view{ "  left trim  " });
+        std::string r = System::String::CopyLeftTrim(std::string_view{"  left trim  "});
         CHECK(r == "left trim  ");
     }
 }
@@ -1067,7 +1073,7 @@ TEST_CASE("ToLower", "[to_lower]")
     }
     // copy const char*
     {
-        char buffer[] = "TO LOWER";
+        char buffer[]      = "TO LOWER";
         std::string result = System::String::CopyLower(buffer);
         CHECK(strcmp(buffer, "TO LOWER") == 0);
         CHECK(result == "to lower");
@@ -1082,7 +1088,7 @@ TEST_CASE("ToLower", "[to_lower]")
     // copy std::string_view
     {
         std::string_view buffer = "TO LOWER";
-        std::string result = System::String::CopyLower(buffer);
+        std::string result      = System::String::CopyLower(buffer);
         CHECK(strcmp(&buffer[0], "TO LOWER") == 0);
         CHECK(result == "to lower");
     }
@@ -1109,7 +1115,7 @@ TEST_CASE("ToUpper", "[to_upper]")
     }
     // copy const char*
     {
-        char buffer[] = "to upper";
+        char buffer[]      = "to upper";
         std::string result = System::String::CopyUpper(buffer);
         CHECK(strcmp(buffer, "to upper") == 0);
         CHECK(result == "TO UPPER");
@@ -1124,7 +1130,7 @@ TEST_CASE("ToUpper", "[to_upper]")
     // copy std::string_view
     {
         std::string_view buffer = "to upper";
-        std::string result = System::String::CopyUpper(buffer);
+        std::string result      = System::String::CopyUpper(buffer);
         CHECK(strcmp(&buffer[0], "to upper") == 0);
         CHECK(result == "TO UPPER");
     }
@@ -1132,32 +1138,36 @@ TEST_CASE("ToUpper", "[to_upper]")
 
 TEST_CASE("CloneString", "[clone_string]")
 {
-    char* result = nullptr;
+    char *result = nullptr;
 
     // const char* (nullptr)
     {
         result = System::String::CloneString(nullptr);
         CHECK((result != nullptr && strcmp(result, "") == 0));
-        delete[] result; result = nullptr;
+        delete[] result;
+        result = nullptr;
     }
     // const char*
     {
-        const char* tmp = "Clone test";
-        result = System::String::CloneString(tmp);
+        const char *tmp = "Clone test";
+        result          = System::String::CloneString(tmp);
         CHECK((result != nullptr && strcmp(result, "Clone test") == 0));
-        delete[] result; result = nullptr;
+        delete[] result;
+        result = nullptr;
     }
     // std::string const&
     {
         result = System::String::CloneString(std::string("Clone test"));
         CHECK((result != nullptr && strcmp(result, "Clone test") == 0));
-        delete[] result; result = nullptr;
+        delete[] result;
+        result = nullptr;
     }
     // std::string_view
     {
         result = System::String::CloneString(std::string_view("Clone test"));
         CHECK((result != nullptr && strcmp(result, "Clone test") == 0));
-        delete[] result; result = nullptr;
+        delete[] result;
+        result = nullptr;
     }
 }
 
