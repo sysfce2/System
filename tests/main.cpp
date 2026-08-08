@@ -817,6 +817,7 @@ TEST_CASE("Load library", "[loadlibrary]")
               << "  System architecture    : " << System::arch_name << std::endl
               << "  Compiler               : " << System::compiler_name << std::endl
               << "  Translated mode        : " << System::GetTranslatedMode() << std::endl
+              << "  User AppData           : " << System::GetUserdataPath() << std::endl
               << "  Executable path        : " << System::GetExecutablePath() << std::endl
               << "  Executable module path : " << System::GetModulePath() << std::endl
               << "  Library module path    : " << shared.GetLibraryPath() << std::endl
